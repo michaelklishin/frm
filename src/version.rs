@@ -16,34 +16,45 @@ use crate::errors::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Prerelease {
-    Alpha(u32),
-    Beta(u32),
-    Rc(u32),
+    Alpha(String),
+    Beta(String),
+    Rc(String),
 }
 
 impl Prerelease {
-    fn order(&self) -> (u8, u32) {
-        match self {
-            Prerelease::Alpha(n) => (0, *n),
-            Prerelease::Beta(n) => (1, *n),
-            Prerelease::Rc(n) => (2, *n),
-        }
+    pub fn is_alpha(&self) -> bool {
+        matches!(self, Prerelease::Alpha(_))
     }
 }
 
 impl fmt::Display for Prerelease {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Prerelease::Alpha(n) => write!(f, "alpha.{}", n),
-            Prerelease::Beta(n) => write!(f, "beta.{}", n),
-            Prerelease::Rc(n) => write!(f, "rc.{}", n),
+            Prerelease::Alpha(s) => write!(f, "alpha.{}", s),
+            Prerelease::Beta(s) => write!(f, "beta.{}", s),
+            Prerelease::Rc(s) => write!(f, "rc.{}", s),
         }
+    }
+}
+
+fn compare_prerelease_identifiers(a: &str, b: &str) -> Ordering {
+    match (a.parse::<u32>(), b.parse::<u32>()) {
+        (Ok(na), Ok(nb)) => na.cmp(&nb),
+        _ => a.cmp(b),
     }
 }
 
 impl Ord for Prerelease {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.order().cmp(&other.order())
+        match (self, other) {
+            (Prerelease::Alpha(a), Prerelease::Alpha(b)) => compare_prerelease_identifiers(a, b),
+            (Prerelease::Alpha(_), _) => Ordering::Less,
+            (_, Prerelease::Alpha(_)) => Ordering::Greater,
+            (Prerelease::Beta(a), Prerelease::Beta(b)) => compare_prerelease_identifiers(a, b),
+            (Prerelease::Beta(_), Prerelease::Rc(_)) => Ordering::Less,
+            (Prerelease::Rc(_), Prerelease::Beta(_)) => Ordering::Greater,
+            (Prerelease::Rc(a), Prerelease::Rc(b)) => compare_prerelease_identifiers(a, b),
+        }
     }
 }
 
@@ -85,9 +96,21 @@ impl Version {
         self.to_string()
     }
 
+    pub fn is_server_packages_release(&self) -> bool {
+        self.prerelease.as_ref().is_some_and(|p| p.is_alpha())
+    }
+
     pub fn download_url(&self) -> String {
         format!(
             "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{v}/rabbitmq-server-generic-unix-{v}.tar.xz",
+            v = self
+        )
+    }
+
+    pub fn download_url_with_tag(&self, tag: &str) -> String {
+        format!(
+            "https://github.com/rabbitmq/server-packages/releases/download/{tag}/rabbitmq-server-generic-unix-{v}.tar.xz",
+            tag = tag,
             v = self
         )
     }
@@ -156,14 +179,15 @@ fn parse_prerelease(s: &str, full: &str) -> Result<Prerelease, Error> {
         return Err(Error::InvalidVersion(full.to_string()));
     }
 
-    let num: u32 = parts[1]
-        .parse()
-        .map_err(|_| Error::InvalidVersion(full.to_string()))?;
+    let identifier = parts[1];
+    if identifier.is_empty() {
+        return Err(Error::InvalidVersion(full.to_string()));
+    }
 
     match parts[0].to_lowercase().as_str() {
-        "alpha" => Ok(Prerelease::Alpha(num)),
-        "beta" => Ok(Prerelease::Beta(num)),
-        "rc" => Ok(Prerelease::Rc(num)),
+        "alpha" => Ok(Prerelease::Alpha(identifier.to_string())),
+        "beta" => Ok(Prerelease::Beta(identifier.to_string())),
+        "rc" => Ok(Prerelease::Rc(identifier.to_string())),
         _ => Err(Error::InvalidVersion(full.to_string())),
     }
 }

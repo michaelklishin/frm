@@ -2,6 +2,8 @@
 
 This is `frm`, a RabbitMQ version switcher based on the [generic binary builds](https://www.rabbitmq.com/docs/install-generic-unix).
 
+It is inspired by multiple (runtime) version management tools, from `rvm` to `kerl` to `fnm` to `rustup`.
+
 ## Intended Use Cases
 
 `frm` was developed to be used in development and (certain) integration testing scenarios,

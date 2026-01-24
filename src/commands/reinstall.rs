@@ -14,9 +14,24 @@ use crate::Result;
 use crate::download::{Downloader, copy_default_config};
 use crate::errors::Error;
 use crate::paths::Paths;
+use crate::timestamps::Timestamps;
 use crate::version::Version;
 
-pub async fn run(paths: &Paths, version: &Version) -> Result<()> {
+pub async fn run_release(paths: &Paths, version: &Version) -> Result<()> {
+    if version.is_server_packages_release() {
+        return Err(Error::ExpectedNonAlphaVersion(version.clone()));
+    }
+    run(paths, version).await
+}
+
+pub async fn run_alpha(paths: &Paths, version: &Version) -> Result<()> {
+    if !version.is_server_packages_release() {
+        return Err(Error::ExpectedAlphaVersion(version.clone()));
+    }
+    run(paths, version).await
+}
+
+async fn run(paths: &Paths, version: &Version) -> Result<()> {
     if !paths.version_installed(version) {
         return Err(Error::VersionNotInstalled(version.clone()));
     }
@@ -40,6 +55,10 @@ pub async fn run(paths: &Paths, version: &Version) -> Result<()> {
 
     print_info("Cleaning up downloaded archive");
     downloader.cleanup_archive(version, paths)?;
+
+    let mut timestamps = Timestamps::load(paths)?;
+    timestamps.record(version);
+    timestamps.save(paths)?;
 
     print_success(format!("RabbitMQ {} reinstalled successfully", version));
 

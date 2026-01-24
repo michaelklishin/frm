@@ -14,9 +14,24 @@ use crate::Result;
 use crate::config::Config;
 use crate::errors::Error;
 use crate::paths::Paths;
+use crate::timestamps::Timestamps;
 use crate::version::Version;
 
-pub fn run(paths: &Paths, version: &Version) -> Result<()> {
+pub fn run_release(paths: &Paths, version: &Version) -> Result<()> {
+    if version.is_server_packages_release() {
+        return Err(Error::ExpectedNonAlphaVersion(version.clone()));
+    }
+    run(paths, version)
+}
+
+pub fn run_alpha(paths: &Paths, version: &Version) -> Result<()> {
+    if !version.is_server_packages_release() {
+        return Err(Error::ExpectedAlphaVersion(version.clone()));
+    }
+    run(paths, version)
+}
+
+fn run(paths: &Paths, version: &Version) -> Result<()> {
     if !paths.version_installed(version) {
         return Err(Error::VersionNotInstalled(version.clone()));
     }
@@ -41,6 +56,10 @@ pub fn run(paths: &Paths, version: &Version) -> Result<()> {
     if archive.exists() {
         fs::remove_file(archive)?;
     }
+
+    let mut timestamps = Timestamps::load(paths)?;
+    timestamps.remove(version);
+    timestamps.save(paths)?;
 
     print_success(format!("RabbitMQ {} uninstalled", version));
 

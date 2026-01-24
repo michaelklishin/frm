@@ -174,7 +174,7 @@ fn paths_with_custom_base_dir() {
 #[test]
 fn paths_prerelease_version_dir() {
     let (_temp, paths) = setup_temp_paths();
-    let version = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(1));
+    let version = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("1".into()));
     let version_dir = paths.version_dir(&version);
     assert!(version_dir.ends_with("4.2.4-alpha.1"));
 }
@@ -191,4 +191,28 @@ fn paths_version_dirs_are_consistent() {
     assert!(sbin.starts_with(paths.version_dir(&version)));
     assert!(etc.starts_with(paths.version_dir(&version)));
     assert!(log.starts_with(paths.version_dir(&version)));
+}
+
+#[test]
+fn paths_timestamps_file() {
+    let (_temp, paths) = setup_temp_paths();
+    let timestamps_file = paths.timestamps_file();
+    assert!(timestamps_file.ends_with("version_timestamps.json"));
+}
+
+#[test]
+fn paths_installed_versions_with_alphas() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let alpha = "4.3.0-alpha.132057c7".parse::<Version>().unwrap();
+    let release = Version::new(4, 2, 3);
+
+    fs::create_dir_all(paths.version_dir(&alpha)).unwrap();
+    fs::create_dir_all(paths.version_dir(&release)).unwrap();
+
+    let versions = paths.installed_versions().unwrap();
+    assert_eq!(versions.len(), 2);
+    assert!(versions.contains(&alpha));
+    assert!(versions.contains(&release));
 }

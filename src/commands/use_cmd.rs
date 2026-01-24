@@ -15,16 +15,22 @@ use crate::version::Version;
 pub fn run(paths: &Paths, version: &Version, shell: Option<Shell>) -> Result<()> {
     if !paths.version_installed(version) {
         let versions = paths.installed_versions()?;
+        let install_cmd = if version.is_server_packages_release() {
+            "frm alphas install"
+        } else {
+            "frm releases install"
+        };
+
         if versions.is_empty() {
             eprintln!("No versions installed. Install one with:");
-            eprintln!("  frm install {}", version);
+            eprintln!("  {} {}", install_cmd, version);
         } else {
             eprintln!("Installed versions:");
             for v in &versions {
                 eprintln!("  {}", v);
             }
             eprintln!("\nInstall this version with:");
-            eprintln!("  frm install {}", version);
+            eprintln!("  {} {}", install_cmd, version);
         }
 
         return Err(Error::VersionNotInstalled(version.clone()));

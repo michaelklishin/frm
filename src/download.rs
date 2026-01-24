@@ -18,6 +18,7 @@ use xz2::read::XzDecoder;
 use crate::Result;
 use crate::errors::Error;
 use crate::paths::Paths;
+use crate::releases::find_server_packages_release_tag;
 use crate::version::Version;
 
 pub struct Downloader {
@@ -32,7 +33,13 @@ impl Downloader {
     }
 
     pub async fn download(&self, version: &Version, paths: &Paths) -> Result<()> {
-        let url = version.download_url();
+        let url = if version.is_server_packages_release() {
+            let tag = find_server_packages_release_tag(&self.client, version).await?;
+            version.download_url_with_tag(&tag)
+        } else {
+            version.download_url()
+        };
+
         let archive_path = paths.downloads_dir().join(version.archive_name());
 
         paths.ensure_dirs()?;

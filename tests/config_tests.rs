@@ -88,7 +88,7 @@ fn config_prerelease_save_and_load() {
     let (temp, paths) = setup_temp_paths();
     fs::create_dir_all(temp.path()).unwrap();
 
-    let version = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(2));
+    let version = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("2".into()));
     let mut config = Config::default();
     config.set_default(version.clone());
     config.save(&paths).unwrap();

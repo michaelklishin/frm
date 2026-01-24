@@ -17,7 +17,35 @@ use crate::version::Version;
 
 const LOG_FILE_PATTERN: &str = "rabbit@";
 
-pub fn path(paths: &Paths, version: &Version) -> Result<()> {
+pub fn path_release(paths: &Paths, version: &Version) -> Result<()> {
+    if version.is_server_packages_release() {
+        return Err(Error::ExpectedNonAlphaVersion(version.clone()));
+    }
+    path(paths, version)
+}
+
+pub fn path_alpha(paths: &Paths, version: &Version) -> Result<()> {
+    if !version.is_server_packages_release() {
+        return Err(Error::ExpectedAlphaVersion(version.clone()));
+    }
+    path(paths, version)
+}
+
+pub fn tail_release(paths: &Paths, version: &Version, lines: usize) -> Result<()> {
+    if version.is_server_packages_release() {
+        return Err(Error::ExpectedNonAlphaVersion(version.clone()));
+    }
+    tail(paths, version, lines)
+}
+
+pub fn tail_alpha(paths: &Paths, version: &Version, lines: usize) -> Result<()> {
+    if !version.is_server_packages_release() {
+        return Err(Error::ExpectedAlphaVersion(version.clone()));
+    }
+    tail(paths, version, lines)
+}
+
+fn path(paths: &Paths, version: &Version) -> Result<()> {
     if !paths.version_installed(version) {
         return Err(Error::VersionNotInstalled(version.clone()));
     }
@@ -28,7 +56,7 @@ pub fn path(paths: &Paths, version: &Version) -> Result<()> {
     Ok(())
 }
 
-pub fn tail(paths: &Paths, version: &Version, lines: usize) -> Result<()> {
+fn tail(paths: &Paths, version: &Version, lines: usize) -> Result<()> {
     if !paths.version_installed(version) {
         return Err(Error::VersionNotInstalled(version.clone()));
     }

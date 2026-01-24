@@ -8,13 +8,14 @@
 
 use std::process;
 
-use bel7_cli::{ExitCode, ExitCodeProvider, print_error};
+use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
 use clap_complete::Shell as CompletionShell;
 
 use frm::cli::build_cli;
 use frm::commands;
 use frm::errors::Error;
 use frm::paths::Paths;
+use frm::releases::find_latest_alpha;
 use frm::shell::Shell;
 use frm::version::Version;
 use frm::version_file;
@@ -42,17 +43,144 @@ async fn main() {
     };
 
     let result = match matches.subcommand() {
-        Some(("list", _)) => commands::list(&paths),
+        Some(("releases", sub)) => match sub.subcommand() {
+            Some(("list", _)) => commands::list_releases(&paths),
+            Some(("path", path_sub)) => {
+                let version_arg = path_sub.get_one::<String>("version");
 
-        Some(("install", sub)) => {
-            let version_arg = sub.get_one::<String>("version");
-            let force = sub.get_flag("force");
-
-            match resolve_version(version_arg) {
-                Ok(version) => commands::install(&paths, &version, force).await,
-                Err(e) => Err(e),
+                match resolve_version(version_arg) {
+                    Ok(version) => commands::path_release(&paths, &version),
+                    Err(e) => Err(e),
+                }
             }
-        }
+            Some(("install", install_sub)) => {
+                let version_arg = install_sub.get_one::<String>("version");
+                let force = install_sub.get_flag("force");
+
+                match resolve_version(version_arg) {
+                    Ok(version) => commands::install_release(&paths, &version, force).await,
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("reinstall", reinstall_sub)) => {
+                let version_arg = reinstall_sub.get_one::<String>("version");
+
+                match resolve_version(version_arg) {
+                    Ok(version) => commands::reinstall_release(&paths, &version).await,
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("uninstall", uninstall_sub)) => {
+                let version_str = uninstall_sub.get_one::<String>("version").unwrap();
+
+                match version_str.parse::<Version>() {
+                    Ok(version) => commands::uninstall_release(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("logs", logs_sub)) => match logs_sub.subcommand() {
+                Some(("path", path_sub)) => {
+                    let version_arg = path_sub.get_one::<String>("version");
+
+                    match resolve_version(version_arg) {
+                        Ok(version) => commands::logs_path_release(&paths, &version),
+                        Err(e) => Err(e),
+                    }
+                }
+                Some(("tail", tail_sub)) => {
+                    let version_arg = tail_sub.get_one::<String>("version");
+                    let lines = *tail_sub.get_one::<usize>("lines").unwrap();
+
+                    match resolve_version(version_arg) {
+                        Ok(version) => commands::logs_tail_release(&paths, &version, lines),
+                        Err(e) => Err(e),
+                    }
+                }
+                _ => Ok(()),
+            },
+            _ => Ok(()),
+        },
+
+        Some(("alphas", sub)) => match sub.subcommand() {
+            Some(("list", _)) => commands::list_alphas(&paths),
+            Some(("path", path_sub)) => {
+                let version_arg = path_sub.get_one::<String>("version");
+
+                match resolve_version(version_arg) {
+                    Ok(version) => commands::path_alpha(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("install", install_sub)) => {
+                let version_arg = install_sub.get_one::<String>("version");
+                let latest = install_sub.get_flag("latest");
+                let force = install_sub.get_flag("force");
+
+                if latest {
+                    print_info("Fetching latest alpha release...");
+                    let client = reqwest::Client::new();
+                    match find_latest_alpha(&client).await {
+                        Ok(alpha) => {
+                            print_info(format!("Found: {}", alpha.version));
+                            commands::install_alpha(&paths, &alpha.version, force).await
+                        }
+                        Err(e) => Err(e),
+                    }
+                } else {
+                    match version_arg {
+                        Some(v) => match v.parse::<Version>() {
+                            Ok(version) => commands::install_alpha(&paths, &version, force).await,
+                            Err(e) => Err(e),
+                        },
+                        None => Err(Error::InvalidVersion(
+                            "specify a version or use --latest".into(),
+                        )),
+                    }
+                }
+            }
+            Some(("reinstall", reinstall_sub)) => {
+                let version_str = reinstall_sub.get_one::<String>("version").unwrap();
+
+                match version_str.parse::<Version>() {
+                    Ok(version) => commands::reinstall_alpha(&paths, &version).await,
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("uninstall", uninstall_sub)) => {
+                let version_str = uninstall_sub.get_one::<String>("version").unwrap();
+
+                match version_str.parse::<Version>() {
+                    Ok(version) => commands::uninstall_alpha(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("prune", _)) => commands::prune_alphas(&paths),
+            Some(("clean", clean_sub)) => {
+                let older_than = clean_sub.get_one::<String>("older-than").unwrap();
+                commands::clean_alphas(&paths, older_than)
+            }
+            Some(("logs", logs_sub)) => match logs_sub.subcommand() {
+                Some(("path", path_sub)) => {
+                    let version_arg = path_sub.get_one::<String>("version");
+
+                    match resolve_version(version_arg) {
+                        Ok(version) => commands::logs_path_alpha(&paths, &version),
+                        Err(e) => Err(e),
+                    }
+                }
+                Some(("tail", tail_sub)) => {
+                    let version_arg = tail_sub.get_one::<String>("version");
+                    let lines = *tail_sub.get_one::<usize>("lines").unwrap();
+
+                    match resolve_version(version_arg) {
+                        Ok(version) => commands::logs_tail_alpha(&paths, &version, lines),
+                        Err(e) => Err(e),
+                    }
+                }
+                _ => Ok(()),
+            },
+            _ => Ok(()),
+        },
 
         Some(("use", sub)) => {
             let version_arg = sub.get_one::<String>("version");
@@ -69,24 +197,6 @@ async fn main() {
 
             match version_str.parse::<Version>() {
                 Ok(version) => commands::default(&paths, &version),
-                Err(e) => Err(e),
-            }
-        }
-
-        Some(("uninstall", sub)) => {
-            let version_str = sub.get_one::<String>("version").unwrap();
-
-            match version_str.parse::<Version>() {
-                Ok(version) => commands::uninstall(&paths, &version),
-                Err(e) => Err(e),
-            }
-        }
-
-        Some(("reinstall", sub)) => {
-            let version_arg = sub.get_one::<String>("version");
-
-            match resolve_version(version_arg) {
-                Ok(version) => commands::reinstall(&paths, &version).await,
                 Err(e) => Err(e),
             }
         }
@@ -117,36 +227,15 @@ async fn main() {
             _ => Ok(()),
         },
 
-        Some(("show", sub)) => {
+        Some(("inspect", sub)) => {
             let file = sub.get_one::<String>("file").unwrap();
             let version_arg = sub.get_one::<String>("version");
 
             match resolve_version(version_arg) {
-                Ok(version) => commands::show(&paths, &version, file),
+                Ok(version) => commands::inspect(&paths, &version, file),
                 Err(e) => Err(e),
             }
         }
-
-        Some(("logs", sub)) => match sub.subcommand() {
-            Some(("path", logs_sub)) => {
-                let version_arg = logs_sub.get_one::<String>("version");
-
-                match resolve_version(version_arg) {
-                    Ok(version) => commands::logs_path(&paths, &version),
-                    Err(e) => Err(e),
-                }
-            }
-            Some(("tail", logs_sub)) => {
-                let version_arg = logs_sub.get_one::<String>("version");
-                let lines = *logs_sub.get_one::<usize>("lines").unwrap();
-
-                match resolve_version(version_arg) {
-                    Ok(version) => commands::logs_tail(&paths, &version, lines),
-                    Err(e) => Err(e),
-                }
-            }
-            _ => Ok(()),
-        },
 
         Some(("env", sub)) => {
             let shell = sub.get_one::<Shell>("shell").unwrap();

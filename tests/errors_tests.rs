@@ -102,3 +102,62 @@ fn error_display_unknown_config_file() {
     let err = Error::UnknownConfigFile("bad.conf".into());
     assert_eq!(err.to_string(), "unknown config file: bad.conf");
 }
+
+#[test]
+fn exit_code_release_not_found() {
+    let err = Error::ReleaseNotFound("4.2.3".into());
+    assert_eq!(err.exit_code(), ExitCode::NoInput);
+}
+
+#[test]
+fn exit_code_expected_alpha_version() {
+    let err = Error::ExpectedAlphaVersion(Version::new(4, 2, 3));
+    assert_eq!(err.exit_code(), ExitCode::Usage);
+}
+
+#[test]
+fn exit_code_expected_non_alpha_version() {
+    let v = "4.3.0-alpha.abc123".parse::<Version>().unwrap();
+    let err = Error::ExpectedNonAlphaVersion(v);
+    assert_eq!(err.exit_code(), ExitCode::Usage);
+}
+
+#[test]
+fn exit_code_no_alpha_releases_found() {
+    let err = Error::NoAlphaReleasesFound;
+    assert_eq!(err.exit_code(), ExitCode::NoInput);
+}
+
+#[test]
+fn exit_code_invalid_datetime() {
+    let err = Error::InvalidDateTime("not a date".into());
+    assert_eq!(err.exit_code(), ExitCode::Usage);
+}
+
+#[test]
+fn error_display_expected_alpha_version() {
+    let err = Error::ExpectedAlphaVersion(Version::new(4, 2, 3));
+    assert_eq!(err.to_string(), "expected alpha version, got: 4.2.3");
+}
+
+#[test]
+fn error_display_expected_non_alpha_version() {
+    let v = "4.3.0-alpha.abc123".parse::<Version>().unwrap();
+    let err = Error::ExpectedNonAlphaVersion(v);
+    assert_eq!(
+        err.to_string(),
+        "expected non-alpha version, got: 4.3.0-alpha.abc123"
+    );
+}
+
+#[test]
+fn error_display_no_alpha_releases_found() {
+    let err = Error::NoAlphaReleasesFound;
+    assert_eq!(err.to_string(), "no alpha releases found");
+}
+
+#[test]
+fn error_display_invalid_datetime() {
+    let err = Error::InvalidDateTime("not valid".into());
+    assert_eq!(err.to_string(), "invalid date/time: not valid");
+}

@@ -27,6 +27,9 @@ pub enum Error {
     #[error("download failed: {0}")]
     DownloadFailed(String),
 
+    #[error("release not found: {0}")]
+    ReleaseNotFound(String),
+
     #[error("extraction failed: {0}")]
     ExtractionFailed(String),
 
@@ -56,6 +59,21 @@ pub enum Error {
 
     #[error("TOML serialization error: {0}")]
     TomlSerialize(#[from] toml::ser::Error),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("expected alpha version, got: {0}")]
+    ExpectedAlphaVersion(Version),
+
+    #[error("expected non-alpha version, got: {0}")]
+    ExpectedNonAlphaVersion(Version),
+
+    #[error("no alpha releases found")]
+    NoAlphaReleasesFound,
+
+    #[error("invalid date/time: {0}")]
+    InvalidDateTime(String),
 }
 
 impl ExitCodeProvider for Error {
@@ -65,6 +83,7 @@ impl ExitCodeProvider for Error {
             Error::VersionAlreadyInstalled(_) => ExitCode::CantCreat,
             Error::InvalidVersion(_) => ExitCode::Usage,
             Error::DownloadFailed(_) => ExitCode::Unavailable,
+            Error::ReleaseNotFound(_) => ExitCode::NoInput,
             Error::ExtractionFailed(_) => ExitCode::Software,
             Error::Config(_) => ExitCode::Config,
             Error::UnknownTool(_) => ExitCode::Usage,
@@ -75,6 +94,11 @@ impl ExitCodeProvider for Error {
             Error::Http(_) => ExitCode::Protocol,
             Error::TomlParse(_) => ExitCode::DataErr,
             Error::TomlSerialize(_) => ExitCode::Software,
+            Error::Json(_) => ExitCode::DataErr,
+            Error::ExpectedAlphaVersion(_) => ExitCode::Usage,
+            Error::ExpectedNonAlphaVersion(_) => ExitCode::Usage,
+            Error::NoAlphaReleasesFound => ExitCode::NoInput,
+            Error::InvalidDateTime(_) => ExitCode::Usage,
         }
     }
 }

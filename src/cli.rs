@@ -18,36 +18,81 @@ pub fn build_cli() -> Command {
         .author("Michael S. Klishin")
         .about("Frakking RabbitMQ version Manager")
         .arg_required_else_help(true)
-        .subcommand(list_command())
-        .subcommand(install_command())
+        .subcommand(releases_command())
+        .subcommand(alphas_command())
         .subcommand(use_command())
         .subcommand(default_command())
-        .subcommand(uninstall_command())
-        .subcommand(reinstall_command())
         .subcommand(cli_command())
         .subcommand(fg_command())
-        .subcommand(show_command())
-        .subcommand(logs_command())
+        .subcommand(inspect_command())
         .subcommand(env_command())
         .subcommand(completions_command())
 }
 
-fn list_command() -> Command {
-    Command::new("list")
-        .visible_alias("ls")
-        .about("List installed RabbitMQ versions")
+fn releases_command() -> Command {
+    Command::new("releases")
+        .about("Install or manage RabbitMQ releases (GA, RCs, betas); for alphas, see the 'alphas' command group")
+        .arg_required_else_help(true)
+        .subcommand(releases_list_command())
+        .subcommand(releases_path_command())
+        .subcommand(releases_logs_command())
+        .subcommand(releases_install_command())
+        .subcommand(releases_reinstall_command())
+        .subcommand(releases_uninstall_command())
 }
 
-fn install_command() -> Command {
-    Command::new("install")
-        .about("Install a RabbitMQ version")
+fn releases_list_command() -> Command {
+    Command::new("list")
+        .visible_alias("ls")
+        .about("List installed stable RabbitMQ releases")
+}
+
+fn releases_path_command() -> Command {
+    Command::new("path")
+        .about("Show the local path of an installed release")
         .long_about(
-            "Install a RabbitMQ version.\n\n\
-            If no version is specified, reads from .tool-versions file.",
+            "Show the local path of an installed release.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
+        )
+        .arg(version_arg())
+}
+
+fn releases_logs_command() -> Command {
+    Command::new("logs")
+        .about("Show RabbitMQ log file information for a release")
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("path")
+                .about("Show the path to the log file")
+                .arg(version_arg()),
+        )
+        .subcommand(
+            Command::new("tail")
+                .about("Show the last lines of the log file")
+                .arg(version_arg())
+                .arg(
+                    Arg::new("lines")
+                        .long("lines")
+                        .short('n')
+                        .help("Number of lines to show")
+                        .default_value("10")
+                        .value_parser(clap::value_parser!(usize)),
+                ),
+        )
+}
+
+fn releases_install_command() -> Command {
+    Command::new("install")
+        .visible_alias("i")
+        .about("Install a stable RabbitMQ release")
+        .long_about(
+            "Install a stable RabbitMQ release (beta, rc, or GA).\n\n\
+            If no version is specified, tries to use the local .tool-versions file.\n\n\
+            Alpha versions are not allowed; use 'frm alphas install' instead.",
         )
         .arg(
             Arg::new("version")
-                .help("Version to install (e.g., 4.2.3), or reads from .tool-versions")
+                .help("Version to install (e.g., 4.2.3 or 4.2.0-rc.1)")
                 .index(1),
         )
         .arg(
@@ -59,18 +104,182 @@ fn install_command() -> Command {
         )
 }
 
+fn releases_reinstall_command() -> Command {
+    Command::new("reinstall")
+        .about("Reinstall a stable RabbitMQ release")
+        .long_about(
+            "Reinstall a stable RabbitMQ release.\n\n\
+            Removes the existing installation and downloads a fresh copy.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Version to reinstall (e.g., 4.2.3)")
+                .index(1),
+        )
+}
+
+fn releases_uninstall_command() -> Command {
+    Command::new("uninstall")
+        .visible_alias("rm")
+        .about("Uninstall a stable RabbitMQ release")
+        .arg(
+            Arg::new("version")
+                .help("Version to uninstall (e.g., 4.2.3)")
+                .required(true)
+                .index(1),
+        )
+}
+
+fn alphas_command() -> Command {
+    Command::new("alphas")
+        .about("Manage alpha RabbitMQ releases")
+        .arg_required_else_help(true)
+        .subcommand(alphas_list_command())
+        .subcommand(alphas_path_command())
+        .subcommand(alphas_logs_command())
+        .subcommand(alphas_install_command())
+        .subcommand(alphas_reinstall_command())
+        .subcommand(alphas_uninstall_command())
+        .subcommand(alphas_prune_command())
+        .subcommand(alphas_clean_command())
+}
+
+fn alphas_list_command() -> Command {
+    Command::new("list")
+        .visible_alias("ls")
+        .about("List installed alpha RabbitMQ releases")
+}
+
+fn alphas_path_command() -> Command {
+    Command::new("path")
+        .about("Show the local path of an installed alpha release")
+        .long_about(
+            "Show the local path of an installed alpha release.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
+        )
+        .arg(version_arg())
+}
+
+fn alphas_logs_command() -> Command {
+    Command::new("logs")
+        .about("Show RabbitMQ log file information for an alpha release")
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("path")
+                .about("Show the path to the log file")
+                .arg(version_arg()),
+        )
+        .subcommand(
+            Command::new("tail")
+                .about("Show the last lines of the log file")
+                .arg(version_arg())
+                .arg(
+                    Arg::new("lines")
+                        .long("lines")
+                        .short('n')
+                        .help("Number of lines to show")
+                        .default_value("10")
+                        .value_parser(clap::value_parser!(usize)),
+                ),
+        )
+}
+
+fn alphas_install_command() -> Command {
+    Command::new("install")
+        .visible_alias("i")
+        .about("Install an alpha RabbitMQ release")
+        .long_about(
+            "Install an alpha RabbitMQ release from rabbitmq/server-packages.\n\n\
+            Use --latest to automatically install the most recent alpha release.",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Alpha version to install (e.g., 4.3.0-alpha.132057c7)")
+                .index(1)
+                .conflicts_with("latest"),
+        )
+        .arg(
+            Arg::new("latest")
+                .long("latest")
+                .short('l')
+                .help("Install the most recent alpha release")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("force")
+                .long("force")
+                .short('f')
+                .help("Force reinstallation if version exists")
+                .action(ArgAction::SetTrue),
+        )
+}
+
+fn alphas_reinstall_command() -> Command {
+    Command::new("reinstall")
+        .about("Reinstall an alpha RabbitMQ release")
+        .long_about(
+            "Reinstall an alpha RabbitMQ release.\n\n\
+            Removes the existing installation and downloads a fresh copy.",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Alpha version to reinstall (e.g., 4.3.0-alpha.132057c7)")
+                .required(true)
+                .index(1),
+        )
+}
+
+fn alphas_uninstall_command() -> Command {
+    Command::new("uninstall")
+        .visible_alias("rm")
+        .about("Uninstall an alpha RabbitMQ release")
+        .arg(
+            Arg::new("version")
+                .help("Alpha version to uninstall (e.g., 4.3.0-alpha.132057c7)")
+                .required(true)
+                .index(1),
+        )
+}
+
+fn alphas_prune_command() -> Command {
+    Command::new("prune")
+        .about("Remove all installed alpha releases")
+        .long_about("Remove all installed alpha releases to free up disk space.")
+}
+
+fn alphas_clean_command() -> Command {
+    Command::new("clean")
+        .about("Remove alpha releases older than a specified time")
+        .long_about(
+            "Remove alpha releases older than a specified time.\n\n\
+            The --older-than flag accepts human-readable time strings like:\n\
+            - \"2 weeks ago\"\n\
+            - \"1 month ago\"\n\
+            - \"yesterday\"\n\
+            - \"2025-01-01\" (absolute date)",
+        )
+        .arg(
+            Arg::new("older-than")
+                .long("older-than")
+                .help("Remove alphas installed before this time (e.g., \"2 weeks ago\")")
+                .required(true)
+                .value_name("TIME"),
+        )
+}
+
 fn use_command() -> Command {
     Command::new("use")
         .about("Output shell commands to use a specific version")
         .long_about(
             "Output shell commands to use a specific version.\n\n\
-            If no version is specified, reads from .tool-versions file.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.\n\n\
             bash/zsh: eval \"$(frm use [version])\"\n\
             nushell:  Use 'frm env nu' init script, then call 'frm-use [version]'",
         )
         .arg(
             Arg::new("version")
-                .help("Version to use (e.g., 4.2.3), or reads from .tool-versions")
+                .help("Version to use (e.g., 4.2.3), or uses .tool-versions")
                 .index(1),
         )
         .arg(
@@ -89,33 +298,6 @@ fn default_command() -> Command {
             Arg::new("version")
                 .help("Version to set as default (e.g., 4.2.3)")
                 .required(true)
-                .index(1),
-        )
-}
-
-fn uninstall_command() -> Command {
-    Command::new("uninstall")
-        .visible_alias("rm")
-        .about("Uninstall a RabbitMQ version")
-        .arg(
-            Arg::new("version")
-                .help("Version to uninstall (e.g., 4.2.3)")
-                .required(true)
-                .index(1),
-        )
-}
-
-fn reinstall_command() -> Command {
-    Command::new("reinstall")
-        .about("Reinstall a RabbitMQ version")
-        .long_about(
-            "Reinstall a RabbitMQ version.\n\n\
-            Removes the existing installation and downloads a fresh copy.\n\n\
-            If no version is specified, reads from .tool-versions file.",
-        )
-        .arg(
-            Arg::new("version")
-                .help("Version to reinstall (e.g., 4.2.3), or reads from .tool-versions")
                 .index(1),
         )
 }
@@ -146,7 +328,7 @@ fn cli_command() -> Command {
         .long_about(format!(
             "Run a RabbitMQ CLI tool from the specified version.\n\n\
             Available tools: {}\n\n\
-            If no version is specified, reads from .tool-versions file.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.\n\n\
             Use -- to separate tool arguments from frm options:\n\
             frm cli rabbitmqctl -V 4.2.3 -- status",
             RABBITMQ_TOOLS.join(", ")
@@ -171,59 +353,35 @@ fn fg_command() -> Command {
                 .about("Start RabbitMQ server in foreground")
                 .long_about(
                     "Start RabbitMQ server in foreground.\n\n\
-                    If no version is specified, reads from .tool-versions file.",
+                    If no version is specified, tries to use the local .tool-versions file.",
                 )
                 .arg(version_arg()),
         )
 }
 
-fn show_command() -> Command {
-    Command::new("show")
-        .about("Show a RabbitMQ configuration file")
+fn inspect_command() -> Command {
+    Command::new("inspect")
+        .about("Inspect a RabbitMQ configuration file")
         .long_about(format!(
-            "Show a RabbitMQ configuration file from the specified version.\n\n\
+            "Inspect a RabbitMQ configuration file from the specified version.\n\n\
             Available files: {}\n\n\
-            If no version is specified, reads from .tool-versions file.",
+            If no version is specified, tries to use the local .tool-versions file.",
             CONFIG_FILES.join(", ")
         ))
         .arg(
             Arg::new("file")
-                .help("Configuration file to show")
+                .help("Configuration file to inspect")
                 .required(true)
                 .index(1),
         )
         .arg(version_arg())
 }
 
-fn logs_command() -> Command {
-    Command::new("logs")
-        .about("Show RabbitMQ log file information")
-        .arg_required_else_help(true)
-        .subcommand(
-            Command::new("path")
-                .about("Show the path to the log file")
-                .arg(version_arg()),
-        )
-        .subcommand(
-            Command::new("tail")
-                .about("Show the last lines of the log file")
-                .arg(version_arg())
-                .arg(
-                    Arg::new("lines")
-                        .long("lines")
-                        .short('n')
-                        .help("Number of lines to show")
-                        .default_value("10")
-                        .value_parser(clap::value_parser!(usize)),
-                ),
-        )
-}
-
 fn version_arg() -> Arg {
     Arg::new("version")
         .long("version")
         .short('V')
-        .help("RabbitMQ version to use, or reads from .tool-versions")
+        .help("RabbitMQ version to use, or uses .tool-versions")
         .value_name("VERSION")
 }
 

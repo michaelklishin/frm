@@ -83,6 +83,10 @@ impl Paths {
         self.base_dir.join("default")
     }
 
+    pub fn timestamps_file(&self) -> PathBuf {
+        self.base_dir.join("version_timestamps.json")
+    }
+
     pub fn ensure_dirs(&self) -> Result<()> {
         fs::create_dir_all(self.versions_dir())?;
         fs::create_dir_all(self.downloads_dir())?;

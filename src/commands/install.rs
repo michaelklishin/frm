@@ -14,9 +14,24 @@ use crate::Result;
 use crate::download::{Downloader, copy_default_config};
 use crate::errors::Error;
 use crate::paths::Paths;
+use crate::timestamps::Timestamps;
 use crate::version::Version;
 
-pub async fn run(paths: &Paths, version: &Version, force: bool) -> Result<()> {
+pub async fn run_release(paths: &Paths, version: &Version, force: bool) -> Result<()> {
+    if version.is_server_packages_release() {
+        return Err(Error::ExpectedNonAlphaVersion(version.clone()));
+    }
+    run(paths, version, force).await
+}
+
+pub async fn run_alpha(paths: &Paths, version: &Version, force: bool) -> Result<()> {
+    if !version.is_server_packages_release() {
+        return Err(Error::ExpectedAlphaVersion(version.clone()));
+    }
+    run(paths, version, force).await
+}
+
+async fn run(paths: &Paths, version: &Version, force: bool) -> Result<()> {
     if paths.version_installed(version) {
         if force {
             print_info(format!("Removing existing installation of {}", version));
@@ -37,6 +52,10 @@ pub async fn run(paths: &Paths, version: &Version, force: bool) -> Result<()> {
 
     print_info("Cleaning up downloaded archive");
     downloader.cleanup_archive(version, paths)?;
+
+    let mut timestamps = Timestamps::load(paths)?;
+    timestamps.record(version);
+    timestamps.save(paths)?;
 
     print_success(format!("RabbitMQ {} installed successfully", version));
     print_info(format!("Activate with: eval \"$(frm use {})\"", version));

@@ -16,7 +16,9 @@ pub mod config;
 pub mod download;
 pub mod errors;
 pub mod paths;
+pub mod releases;
 pub mod shell;
+pub mod timestamps;
 pub mod version;
 pub mod version_file;
 

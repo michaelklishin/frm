@@ -11,20 +11,45 @@ use bel7_cli::{print_info, print_warning};
 use crate::Result;
 use crate::config::Config;
 use crate::paths::Paths;
+use crate::version::Version;
 
-pub fn run(paths: &Paths) -> Result<()> {
+pub fn run_releases(paths: &Paths) -> Result<()> {
     let versions = paths.installed_versions()?;
+    let releases: Vec<_> = versions
+        .into_iter()
+        .filter(|v| !v.is_server_packages_release())
+        .collect();
 
-    if versions.is_empty() {
-        print_warning("No RabbitMQ versions installed");
-        print_info("Install a version with: frm install <version>");
+    if releases.is_empty() {
+        print_warning("No stable RabbitMQ releases installed");
+        print_info("Install a release with: frm releases install <version>");
         return Ok(());
     }
 
+    print_versions(paths, &releases)
+}
+
+pub fn run_alphas(paths: &Paths) -> Result<()> {
+    let versions = paths.installed_versions()?;
+    let alphas: Vec<_> = versions
+        .into_iter()
+        .filter(|v| v.is_server_packages_release())
+        .collect();
+
+    if alphas.is_empty() {
+        print_warning("No alpha RabbitMQ releases installed");
+        print_info("Install an alpha with: frm alphas install --latest");
+        return Ok(());
+    }
+
+    print_versions(paths, &alphas)
+}
+
+fn print_versions(paths: &Paths, versions: &[Version]) -> Result<()> {
     let config = Config::load(paths)?;
     let default_version = config.default_version.as_ref();
 
-    for version in &versions {
+    for version in versions {
         let marker = if Some(version) == default_version {
             "[*]"
         } else {

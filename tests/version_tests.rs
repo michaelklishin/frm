@@ -6,6 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::collections::HashSet;
+
 use frm::version::{Prerelease, Version};
 
 #[test]
@@ -144,7 +146,7 @@ fn parse_prerelease_alpha() {
     assert_eq!(v.major, 4);
     assert_eq!(v.minor, 2);
     assert_eq!(v.patch, 4);
-    assert_eq!(v.prerelease, Some(Prerelease::Alpha(2)));
+    assert_eq!(v.prerelease, Some(Prerelease::Alpha("2".into())));
 }
 
 #[test]
@@ -153,7 +155,7 @@ fn parse_prerelease_beta() {
     assert_eq!(v.major, 4);
     assert_eq!(v.minor, 2);
     assert_eq!(v.patch, 4);
-    assert_eq!(v.prerelease, Some(Prerelease::Beta(1)));
+    assert_eq!(v.prerelease, Some(Prerelease::Beta("1".into())));
 }
 
 #[test]
@@ -162,33 +164,33 @@ fn parse_prerelease_rc() {
     assert_eq!(v.major, 4);
     assert_eq!(v.minor, 2);
     assert_eq!(v.patch, 4);
-    assert_eq!(v.prerelease, Some(Prerelease::Rc(1)));
+    assert_eq!(v.prerelease, Some(Prerelease::Rc("1".into())));
 }
 
 #[test]
 fn parse_prerelease_with_v_prefix() {
     let v = "v4.2.4-alpha.1".parse::<Version>().unwrap();
-    assert_eq!(v.prerelease, Some(Prerelease::Alpha(1)));
+    assert_eq!(v.prerelease, Some(Prerelease::Alpha("1".into())));
 }
 
 #[test]
 fn prerelease_display() {
-    let v = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(2));
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("2".into()));
     assert_eq!(v.to_string(), "4.2.4-alpha.2");
 
-    let v = Version::with_prerelease(4, 2, 4, Prerelease::Beta(1));
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Beta("1".into()));
     assert_eq!(v.to_string(), "4.2.4-beta.1");
 
-    let v = Version::with_prerelease(4, 2, 4, Prerelease::Rc(1));
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Rc("1".into()));
     assert_eq!(v.to_string(), "4.2.4-rc.1");
 }
 
 #[test]
 fn prerelease_ordering() {
-    let alpha1 = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(1));
-    let alpha2 = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(2));
-    let beta1 = Version::with_prerelease(4, 2, 4, Prerelease::Beta(1));
-    let rc1 = Version::with_prerelease(4, 2, 4, Prerelease::Rc(1));
+    let alpha1 = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("1".into()));
+    let alpha2 = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("2".into()));
+    let beta1 = Version::with_prerelease(4, 2, 4, Prerelease::Beta("1".into()));
+    let rc1 = Version::with_prerelease(4, 2, 4, Prerelease::Rc("1".into()));
     let release = Version::new(4, 2, 4);
 
     assert!(alpha1 < alpha2);
@@ -201,24 +203,24 @@ fn prerelease_ordering() {
 fn prerelease_sorting() {
     let mut versions = vec![
         Version::new(4, 2, 4),
-        Version::with_prerelease(4, 2, 4, Prerelease::Beta(1)),
-        Version::with_prerelease(4, 2, 4, Prerelease::Alpha(1)),
-        Version::with_prerelease(4, 2, 4, Prerelease::Rc(1)),
+        Version::with_prerelease(4, 2, 4, Prerelease::Beta("1".into())),
+        Version::with_prerelease(4, 2, 4, Prerelease::Alpha("1".into())),
+        Version::with_prerelease(4, 2, 4, Prerelease::Rc("1".into())),
         Version::new(4, 2, 3),
     ];
 
     versions.sort();
 
     assert_eq!(versions[0], Version::new(4, 2, 3));
-    assert_eq!(versions[1].prerelease, Some(Prerelease::Alpha(1)));
-    assert_eq!(versions[2].prerelease, Some(Prerelease::Beta(1)));
-    assert_eq!(versions[3].prerelease, Some(Prerelease::Rc(1)));
+    assert_eq!(versions[1].prerelease, Some(Prerelease::Alpha("1".into())));
+    assert_eq!(versions[2].prerelease, Some(Prerelease::Beta("1".into())));
+    assert_eq!(versions[3].prerelease, Some(Prerelease::Rc("1".into())));
     assert_eq!(versions[4], Version::new(4, 2, 4));
 }
 
 #[test]
 fn prerelease_download_url() {
-    let v = Version::with_prerelease(4, 2, 4, Prerelease::Alpha(2));
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("2".into()));
     let url = v.download_url();
     assert!(url.contains("4.2.4-alpha.2"));
 }
@@ -237,42 +239,40 @@ fn parse_invalid_prerelease_format() {
 
 #[test]
 fn prerelease_alpha_display() {
-    assert_eq!(Prerelease::Alpha(1).to_string(), "alpha.1");
-    assert_eq!(Prerelease::Alpha(10).to_string(), "alpha.10");
+    assert_eq!(Prerelease::Alpha("1".into()).to_string(), "alpha.1");
+    assert_eq!(Prerelease::Alpha("10".into()).to_string(), "alpha.10");
 }
 
 #[test]
 fn prerelease_beta_display() {
-    assert_eq!(Prerelease::Beta(1).to_string(), "beta.1");
-    assert_eq!(Prerelease::Beta(5).to_string(), "beta.5");
+    assert_eq!(Prerelease::Beta("1".into()).to_string(), "beta.1");
+    assert_eq!(Prerelease::Beta("5".into()).to_string(), "beta.5");
 }
 
 #[test]
 fn prerelease_rc_display() {
-    assert_eq!(Prerelease::Rc(1).to_string(), "rc.1");
-    assert_eq!(Prerelease::Rc(3).to_string(), "rc.3");
+    assert_eq!(Prerelease::Rc("1".into()).to_string(), "rc.1");
+    assert_eq!(Prerelease::Rc("3".into()).to_string(), "rc.3");
 }
 
 #[test]
 fn prerelease_direct_ordering() {
-    assert!(Prerelease::Alpha(1) < Prerelease::Alpha(2));
-    assert!(Prerelease::Alpha(2) < Prerelease::Beta(1));
-    assert!(Prerelease::Beta(1) < Prerelease::Beta(2));
-    assert!(Prerelease::Beta(2) < Prerelease::Rc(1));
-    assert!(Prerelease::Rc(1) < Prerelease::Rc(2));
+    assert!(Prerelease::Alpha("1".into()) < Prerelease::Alpha("2".into()));
+    assert!(Prerelease::Alpha("2".into()) < Prerelease::Beta("1".into()));
+    assert!(Prerelease::Beta("1".into()) < Prerelease::Beta("2".into()));
+    assert!(Prerelease::Beta("2".into()) < Prerelease::Rc("1".into()));
+    assert!(Prerelease::Rc("1".into()) < Prerelease::Rc("2".into()));
 }
 
 #[test]
 fn prerelease_equality() {
-    assert_eq!(Prerelease::Alpha(1), Prerelease::Alpha(1));
-    assert_ne!(Prerelease::Alpha(1), Prerelease::Alpha(2));
-    assert_ne!(Prerelease::Alpha(1), Prerelease::Beta(1));
+    assert_eq!(Prerelease::Alpha("1".into()), Prerelease::Alpha("1".into()));
+    assert_ne!(Prerelease::Alpha("1".into()), Prerelease::Alpha("2".into()));
+    assert_ne!(Prerelease::Alpha("1".into()), Prerelease::Beta("1".into()));
 }
 
 #[test]
 fn version_hash_consistency() {
-    use std::collections::HashSet;
-
     let v1 = Version::new(4, 2, 3);
     let v2 = Version::new(4, 2, 3);
     let v3 = Version::new(4, 2, 4);
@@ -293,7 +293,7 @@ fn version_clone() {
 
 #[test]
 fn prerelease_clone() {
-    let p1 = Prerelease::Alpha(1);
+    let p1 = Prerelease::Alpha("1".into());
     let p2 = p1.clone();
     assert_eq!(p1, p2);
 }
@@ -317,7 +317,7 @@ fn version_large_numbers() {
 #[test]
 fn prerelease_zero_number() {
     let v = "4.2.4-alpha.0".parse::<Version>().unwrap();
-    assert_eq!(v.prerelease, Some(Prerelease::Alpha(0)));
+    assert_eq!(v.prerelease, Some(Prerelease::Alpha("0".into())));
 }
 
 #[test]
@@ -327,9 +327,50 @@ fn parse_invalid_prerelease_empty_number() {
 }
 
 #[test]
-fn parse_invalid_prerelease_negative_number() {
-    let result = "4.2.4-alpha.-1".parse::<Version>();
-    assert!(result.is_err());
+fn parse_prerelease_commit_hash() {
+    let v = "4.3.0-alpha.132057c7".parse::<Version>().unwrap();
+    assert_eq!(v.major, 4);
+    assert_eq!(v.minor, 3);
+    assert_eq!(v.patch, 0);
+    assert_eq!(v.prerelease, Some(Prerelease::Alpha("132057c7".into())));
+}
+
+#[test]
+fn alpha_is_server_packages_release() {
+    let v = "4.3.0-alpha.1".parse::<Version>().unwrap();
+    assert!(v.is_server_packages_release());
+
+    let v = "4.3.0-alpha.132057c7".parse::<Version>().unwrap();
+    assert!(v.is_server_packages_release());
+}
+
+#[test]
+fn beta_is_not_server_packages_release() {
+    let v = "4.3.0-beta.1".parse::<Version>().unwrap();
+    assert!(!v.is_server_packages_release());
+}
+
+#[test]
+fn rc_is_not_server_packages_release() {
+    let v = "4.3.0-rc.1".parse::<Version>().unwrap();
+    assert!(!v.is_server_packages_release());
+}
+
+#[test]
+fn release_is_not_server_packages_release() {
+    let v = "4.3.0".parse::<Version>().unwrap();
+    assert!(!v.is_server_packages_release());
+}
+
+#[test]
+fn prerelease_is_alpha() {
+    let alpha = Prerelease::Alpha("1".into());
+    let beta = Prerelease::Beta("1".into());
+    let rc = Prerelease::Rc("1".into());
+
+    assert!(alpha.is_alpha());
+    assert!(!beta.is_alpha());
+    assert!(!rc.is_alpha());
 }
 
 #[test]

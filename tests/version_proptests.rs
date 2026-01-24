@@ -109,7 +109,7 @@ proptest! {
 
     #[test]
     fn prerelease_roundtrip_alpha(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
-        let version = Version::with_prerelease(major, minor, patch, Prerelease::Alpha(pre_num));
+        let version = Version::with_prerelease(major, minor, patch, Prerelease::Alpha(pre_num.to_string()));
         let s = version.to_string();
         let parsed: Version = s.parse().unwrap();
         prop_assert_eq!(version, parsed);
@@ -117,7 +117,7 @@ proptest! {
 
     #[test]
     fn prerelease_roundtrip_beta(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
-        let version = Version::with_prerelease(major, minor, patch, Prerelease::Beta(pre_num));
+        let version = Version::with_prerelease(major, minor, patch, Prerelease::Beta(pre_num.to_string()));
         let s = version.to_string();
         let parsed: Version = s.parse().unwrap();
         prop_assert_eq!(version, parsed);
@@ -125,7 +125,7 @@ proptest! {
 
     #[test]
     fn prerelease_roundtrip_rc(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
-        let version = Version::with_prerelease(major, minor, patch, Prerelease::Rc(pre_num));
+        let version = Version::with_prerelease(major, minor, patch, Prerelease::Rc(pre_num.to_string()));
         let s = version.to_string();
         let parsed: Version = s.parse().unwrap();
         prop_assert_eq!(version, parsed);
@@ -133,7 +133,7 @@ proptest! {
 
     #[test]
     fn prerelease_less_than_release(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
-        let prerelease = Version::with_prerelease(major, minor, patch, Prerelease::Rc(pre_num));
+        let prerelease = Version::with_prerelease(major, minor, patch, Prerelease::Rc(pre_num.to_string()));
         let release = Version::new(major, minor, patch);
         prop_assert!(prerelease < release);
     }

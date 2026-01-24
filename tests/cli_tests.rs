@@ -53,34 +53,38 @@ fn cli_version_flag() {
 }
 
 #[test]
-fn cli_list_empty() {
+fn cli_releases_list_empty() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .arg("list")
+        .args(["releases", "list"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("No RabbitMQ versions installed"));
+        .stdout(predicate::str::contains(
+            "No stable RabbitMQ releases installed",
+        ));
 }
 
 #[test]
-fn cli_list_alias() {
+fn cli_releases_list_alias() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .arg("ls")
+        .args(["releases", "ls"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("No RabbitMQ versions installed"));
+        .stdout(predicate::str::contains(
+            "No stable RabbitMQ releases installed",
+        ));
 }
 
 #[test]
-fn cli_list_with_versions() {
+fn cli_releases_list_with_versions() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.0.0")).unwrap();
     fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .arg("list")
+        .args(["releases", "list"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.0.0"))
@@ -88,13 +92,28 @@ fn cli_list_with_versions() {
 }
 
 #[test]
-fn cli_install_already_exists() {
+fn cli_releases_list_excludes_alphas() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.132057c7")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "list"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"))
+        .stdout(predicate::str::contains("4.3.0-alpha").not());
+}
+
+#[test]
+fn cli_releases_install_already_exists() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["install", "4.2.3"])
+        .args(["releases", "install", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("already installed"));
@@ -195,7 +214,7 @@ fn cli_default_updates_config() {
 }
 
 #[test]
-fn cli_list_marks_default() {
+fn cli_releases_list_marks_default() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.0.0")).unwrap();
@@ -207,7 +226,7 @@ fn cli_list_marks_default() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .arg("list")
+        .args(["releases", "list"])
         .assert()
         .success()
         .stdout(predicate::str::contains("[ ] 4.0.0"))
@@ -215,23 +234,23 @@ fn cli_list_marks_default() {
 }
 
 #[test]
-fn cli_uninstall_not_installed() {
+fn cli_releases_uninstall_not_installed() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["uninstall", "4.2.3"])
+        .args(["releases", "uninstall", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_uninstall_installed() {
+fn cli_releases_uninstall_installed() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["uninstall", "4.2.3"])
+        .args(["releases", "uninstall", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("RabbitMQ 4.2.3 uninstalled"));
@@ -240,13 +259,13 @@ fn cli_uninstall_installed() {
 }
 
 #[test]
-fn cli_uninstall_alias() {
+fn cli_releases_uninstall_alias() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["rm", "4.2.3"])
+        .args(["releases", "rm", "4.2.3"])
         .assert()
         .success();
 
@@ -254,7 +273,7 @@ fn cli_uninstall_alias() {
 }
 
 #[test]
-fn cli_uninstall_clears_default() {
+fn cli_releases_uninstall_clears_default() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
@@ -265,7 +284,7 @@ fn cli_uninstall_clears_default() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["uninstall", "4.2.3"])
+        .args(["releases", "uninstall", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Cleared default version"));
@@ -274,31 +293,31 @@ fn cli_uninstall_clears_default() {
 }
 
 #[test]
-fn cli_reinstall_not_installed() {
+fn cli_releases_reinstall_not_installed() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["reinstall", "4.2.3"])
+        .args(["releases", "reinstall", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_reinstall_no_version_no_tool_versions() {
+fn cli_releases_reinstall_no_version_no_tool_versions() {
     let temp = TempDir::new().unwrap();
     let work_dir = temp.path().join("empty");
     fs::create_dir_all(&work_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .arg("reinstall")
+        .args(["releases", "reinstall"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("no version specified"));
 }
 
 #[test]
-fn cli_reinstall_with_tool_versions_not_installed() {
+fn cli_releases_reinstall_with_tool_versions_not_installed() {
     let temp = TempDir::new().unwrap();
     let work_dir = temp.path().join("project");
     fs::create_dir_all(&work_dir).unwrap();
@@ -306,19 +325,21 @@ fn cli_reinstall_with_tool_versions_not_installed() {
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .arg("reinstall")
+        .args(["releases", "reinstall"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_reinstall_help() {
+fn cli_releases_reinstall_help() {
     frm_cmd()
-        .args(["reinstall", "--help"])
+        .args(["releases", "reinstall", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Reinstall a RabbitMQ version"))
+        .stdout(predicate::str::contains(
+            "Reinstall a stable RabbitMQ release",
+        ))
         .stdout(predicate::str::contains("fresh copy"));
 }
 
@@ -417,7 +438,7 @@ fn cli_no_version_no_tool_versions() {
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .args(["show", "rabbitmq.conf"])
+        .args(["inspect", "rabbitmq.conf"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("no version specified"));
@@ -460,43 +481,43 @@ fn cli_cli_tool_not_found() {
 }
 
 #[test]
-fn cli_show_not_installed() {
+fn cli_inspect_not_installed() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["show", "rabbitmq.conf", "-V", "4.2.3"])
+        .args(["inspect", "rabbitmq.conf", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_show_unknown_file() {
+fn cli_inspect_unknown_file() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["show", "unknown.conf", "-V", "4.2.3"])
+        .args(["inspect", "unknown.conf", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("unknown config file"));
 }
 
 #[test]
-fn cli_show_file_not_found() {
+fn cli_inspect_file_not_found() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(version_dir.join("etc").join("rabbitmq")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["show", "rabbitmq.conf", "-V", "4.2.3"])
+        .args(["inspect", "rabbitmq.conf", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("file not found"));
 }
 
 #[test]
-fn cli_show_file_exists() {
+fn cli_inspect_file_exists() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let etc_dir = version_dir.join("etc").join("rabbitmq");
@@ -508,14 +529,14 @@ management.tcp.port = 15672
     fs::write(etc_dir.join("rabbitmq.conf"), config).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["show", "rabbitmq.conf", "-V", "4.2.3"])
+        .args(["inspect", "rabbitmq.conf", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("vm_memory_high_watermark"));
 }
 
 #[test]
-fn cli_show_enabled_plugins() {
+fn cli_inspect_enabled_plugins() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let etc_dir = version_dir.join("etc").join("rabbitmq");
@@ -527,7 +548,7 @@ fn cli_show_enabled_plugins() {
     .unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["show", "enabled_plugins", "-V", "4.2.3"])
+        .args(["inspect", "enabled_plugins", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("rabbitmq_management"))
@@ -535,7 +556,7 @@ fn cli_show_enabled_plugins() {
 }
 
 #[test]
-fn cli_show_advanced_config() {
+fn cli_inspect_advanced_config() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let etc_dir = version_dir.join("etc").join("rabbitmq");
@@ -549,51 +570,51 @@ fn cli_show_advanced_config() {
     fs::write(etc_dir.join("advanced.config"), advanced_config).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["show", "advanced.config", "-V", "4.2.3"])
+        .args(["inspect", "advanced.config", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("inet_dist_listen_min"));
 }
 
 #[test]
-fn cli_logs_path_not_installed() {
+fn cli_releases_logs_path_not_installed() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["logs", "path", "-V", "4.2.3"])
+        .args(["releases", "logs", "path", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_logs_path_no_log_dir() {
+fn cli_releases_logs_path_no_log_dir() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(&version_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "path", "-V", "4.2.3"])
+        .args(["releases", "logs", "path", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("file not found"));
 }
 
 #[test]
-fn cli_logs_path_no_log_file() {
+fn cli_releases_logs_path_no_log_file() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
     fs::create_dir_all(&log_dir).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "path", "-V", "4.2.3"])
+        .args(["releases", "logs", "path", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("no log file found"));
 }
 
 #[test]
-fn cli_logs_path_found() {
+fn cli_releases_logs_path_found() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -601,24 +622,54 @@ fn cli_logs_path_found() {
     fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "path", "-V", "4.2.3"])
+        .args(["releases", "logs", "path", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("rabbit@localhost.log"));
 }
 
 #[test]
-fn cli_logs_tail_not_installed() {
+fn cli_releases_logs_path_rejects_alpha() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "logs", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected non-alpha version"));
+}
+
+#[test]
+fn cli_releases_logs_tail_not_installed() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_logs_tail_default_lines() {
+fn cli_releases_logs_tail_rejects_alpha() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "logs", "tail", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected non-alpha version"));
+}
+
+#[test]
+fn cli_releases_logs_tail_default_lines() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -641,7 +692,7 @@ fn cli_logs_tail_default_lines() {
     fs::write(log_dir.join("rabbit@localhost.log"), log_content).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Change boot state"))
@@ -650,7 +701,7 @@ fn cli_logs_tail_default_lines() {
 }
 
 #[test]
-fn cli_logs_tail_custom_lines() {
+fn cli_releases_logs_tail_custom_lines() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -668,7 +719,7 @@ fn cli_logs_tail_custom_lines() {
     fs::write(log_dir.join("rabbit@localhost.log"), log_content).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3", "-n", "3"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3", "-n", "3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("message delivered"))
@@ -678,7 +729,7 @@ fn cli_logs_tail_custom_lines() {
 }
 
 #[test]
-fn cli_logs_tail_long_flag() {
+fn cli_releases_logs_tail_long_flag() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -690,14 +741,14 @@ fn cli_logs_tail_long_flag() {
     .unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3", "--lines", "5"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3", "--lines", "5"])
         .assert()
         .success()
         .stdout(predicate::str::contains("RabbitMQ is starting"));
 }
 
 #[test]
-fn cli_logs_tail_more_lines_than_file() {
+fn cli_releases_logs_tail_more_lines_than_file() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -707,7 +758,7 @@ fn cli_logs_tail_more_lines_than_file() {
     fs::write(log_dir.join("rabbit@localhost.log"), log_content).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3", "-n", "100"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3", "-n", "100"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Starting RabbitMQ"))
@@ -715,7 +766,7 @@ fn cli_logs_tail_more_lines_than_file() {
 }
 
 #[test]
-fn cli_logs_tail_empty_file() {
+fn cli_releases_logs_tail_empty_file() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -723,17 +774,17 @@ fn cli_logs_tail_empty_file() {
     fs::write(log_dir.join("rabbit@localhost.log"), "").unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["logs", "tail", "-V", "4.2.3"])
+        .args(["releases", "logs", "tail", "-V", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::is_empty());
 }
 
 #[test]
-fn cli_logs_no_subcommand() {
+fn cli_releases_logs_no_subcommand() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .arg("logs")
+        .args(["releases", "logs"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("Usage:"));
@@ -773,7 +824,7 @@ fn cli_fg_node_server_not_found() {
 }
 
 #[test]
-fn cli_show_with_tool_versions() {
+fn cli_inspect_with_tool_versions() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.1.0");
     let etc_dir = version_dir.join("etc").join("rabbitmq");
@@ -790,14 +841,14 @@ cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .args(["show", "rabbitmq.conf"])
+        .args(["inspect", "rabbitmq.conf"])
         .assert()
         .success()
         .stdout(predicate::str::contains("vm_memory_high_watermark"));
 }
 
 #[test]
-fn cli_logs_path_with_tool_versions() {
+fn cli_releases_logs_path_with_tool_versions() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.1.0");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -810,14 +861,14 @@ fn cli_logs_path_with_tool_versions() {
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .args(["logs", "path"])
+        .args(["releases", "logs", "path"])
         .assert()
         .success()
         .stdout(predicate::str::contains("rabbit@myhost.log"));
 }
 
 #[test]
-fn cli_logs_tail_with_tool_versions() {
+fn cli_releases_logs_tail_with_tool_versions() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.1.0");
     let log_dir = version_dir.join("var").join("log").join("rabbitmq");
@@ -834,7 +885,7 @@ fn cli_logs_tail_with_tool_versions() {
 
     frm_cmd_with_dir(&temp)
         .current_dir(&work_dir)
-        .args(["logs", "tail"])
+        .args(["releases", "logs", "tail"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Server startup complete"));
@@ -874,4 +925,722 @@ fn cli_cli_with_tool_versions() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("file not found"));
+}
+
+#[test]
+fn cli_releases_help() {
+    frm_cmd()
+        .args(["releases", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Install or manage RabbitMQ releases",
+        ));
+}
+
+#[test]
+fn cli_alphas_help() {
+    frm_cmd()
+        .args(["alphas", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Manage alpha RabbitMQ releases"));
+}
+
+#[test]
+fn cli_alphas_install_help() {
+    frm_cmd()
+        .args(["alphas", "install", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Install an alpha RabbitMQ release",
+        ))
+        .stdout(predicate::str::contains("--latest"));
+}
+
+#[test]
+fn cli_alphas_install_requires_version_or_latest() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "install"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "specify a version or use --latest",
+        ));
+}
+
+#[test]
+fn cli_alphas_install_rejects_non_alpha() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "install", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_releases_install_rejects_alpha() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", "4.3.0-alpha.132057c7"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected non-alpha version"));
+}
+
+#[test]
+fn cli_alphas_uninstall_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "uninstall", "4.3.0-alpha.132057c7"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_uninstall_installed() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.132057c7");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "uninstall", "4.3.0-alpha.132057c7"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "RabbitMQ 4.3.0-alpha.132057c7 uninstalled",
+        ));
+
+    assert!(!version_dir.exists());
+}
+
+#[test]
+fn cli_alphas_uninstall_rejects_non_alpha() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.2.3");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "uninstall", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_alphas_uninstall_alias() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "rm", "4.3.0-alpha.abc123"])
+        .assert()
+        .success();
+
+    assert!(!version_dir.exists());
+}
+
+#[test]
+fn cli_alphas_reinstall_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "reinstall", "4.3.0-alpha.132057c7"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_reinstall_rejects_non_alpha() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.2.3");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "reinstall", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_alphas_prune_no_alphas() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "prune"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No alpha versions installed"));
+}
+
+#[test]
+fn cli_alphas_prune_removes_alphas() {
+    let temp = TempDir::new().unwrap();
+    let alpha1 = temp.path().join("versions").join("4.3.0-alpha.132057c7");
+    let alpha2 = temp.path().join("versions").join("4.3.0-alpha.abcd1234");
+    let release = temp.path().join("versions").join("4.2.3");
+    fs::create_dir_all(&alpha1).unwrap();
+    fs::create_dir_all(&alpha2).unwrap();
+    fs::create_dir_all(&release).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "prune"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Removed 2 alpha version(s)"));
+
+    assert!(!alpha1.exists());
+    assert!(!alpha2.exists());
+    assert!(release.exists());
+}
+
+#[test]
+fn cli_alphas_prune_clears_default_if_alpha() {
+    let temp = TempDir::new().unwrap();
+    let alpha = temp.path().join("versions").join("4.3.0-alpha.132057c7");
+    fs::create_dir_all(&alpha).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "4.3.0-alpha.132057c7"])
+        .assert()
+        .success();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "prune"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Cleared default version"));
+
+    assert!(!temp.path().join("default").exists());
+}
+
+#[test]
+fn cli_alphas_list_with_alphas() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.132057c7")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "list"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.132057c7"))
+        .stdout(predicate::str::contains("4.2.3").not());
+}
+
+#[test]
+fn cli_alphas_list_empty() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "list"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "No alpha RabbitMQ releases installed",
+        ));
+}
+
+#[test]
+fn cli_alphas_list_alias() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "ls"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "No alpha RabbitMQ releases installed",
+        ));
+}
+
+#[test]
+fn cli_alphas_list_marks_default() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.def456")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "4.3.0-alpha.def456"])
+        .assert()
+        .success();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "list"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("[ ] 4.3.0-alpha.abc123"))
+        .stdout(predicate::str::contains("[*] 4.3.0-alpha.def456"));
+}
+
+#[test]
+fn cli_alphas_clean_no_alphas() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "clean", "--older-than", "2 weeks ago"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No alpha versions installed"));
+}
+
+#[test]
+fn cli_alphas_clean_none_old_enough() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    let timestamps_file = temp.path().join("version_timestamps.json");
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    fs::write(
+        &timestamps_file,
+        format!(r#"{{"4.3.0-alpha.abc123":{}}}"#, now),
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "clean", "--older-than", "2 weeks ago"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No alpha versions older than"));
+}
+
+#[test]
+fn cli_alphas_clean_removes_old() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.def456")).unwrap();
+
+    let timestamps_file = temp.path().join("version_timestamps.json");
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let old_ts = now - 60 * 60 * 24 * 30;
+    fs::write(
+        &timestamps_file,
+        format!(
+            r#"{{"4.3.0-alpha.abc123":{},"4.3.0-alpha.def456":{}}}"#,
+            old_ts, now
+        ),
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "clean", "--older-than", "2 weeks ago"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Removed 1 alpha version(s)"));
+
+    assert!(!versions_dir.join("4.3.0-alpha.abc123").exists());
+    assert!(versions_dir.join("4.3.0-alpha.def456").exists());
+}
+
+#[test]
+fn cli_alphas_clean_clears_default_if_removed() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "4.3.0-alpha.abc123"])
+        .assert()
+        .success();
+
+    let timestamps_file = temp.path().join("version_timestamps.json");
+    let old_ts = 0;
+    fs::write(
+        &timestamps_file,
+        format!(r#"{{"4.3.0-alpha.abc123":{}}}"#, old_ts),
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "clean", "--older-than", "yesterday"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Cleared default version"));
+
+    assert!(!temp.path().join("default").exists());
+}
+
+#[test]
+fn cli_alphas_clean_requires_older_than() {
+    frm_cmd()
+        .args(["alphas", "clean"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("--older-than"));
+}
+
+#[test]
+fn cli_alphas_clean_invalid_time() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "clean", "--older-than", "not a valid time"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid date/time"));
+}
+
+#[test]
+fn cli_alphas_logs_path_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_logs_path_found() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("rabbit@localhost.log"));
+}
+
+#[test]
+fn cli_alphas_logs_path_rejects_release() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.2.3");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "path", "-V", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_alphas_logs_tail_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "tail", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_logs_tail_found() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(
+        log_dir.join("rabbit@localhost.log"),
+        "2026-01-16 19:29:14.752351-08:00 [info] Alpha test log\n",
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "tail", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Alpha test log"));
+}
+
+#[test]
+fn cli_alphas_logs_tail_rejects_release() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.2.3");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@localhost.log"), "test log\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs", "tail", "-V", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_alphas_logs_no_subcommand() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "logs"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Usage:"));
+}
+
+#[test]
+fn cli_alphas_logs_path_with_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(log_dir.join("rabbit@myhost.log"), "").unwrap();
+
+    let work_dir = temp.path().join("project");
+    fs::create_dir_all(&work_dir).unwrap();
+    fs::write(
+        work_dir.join(".tool-versions"),
+        "rabbitmq 4.3.0-alpha.abc123\n",
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .current_dir(&work_dir)
+        .args(["alphas", "logs", "path"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("rabbit@myhost.log"));
+}
+
+#[test]
+fn cli_alphas_logs_tail_with_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
+    fs::create_dir_all(&log_dir).unwrap();
+    fs::write(
+        log_dir.join("rabbit@myhost.log"),
+        "2026-01-16 19:29:14.752351-08:00 [info] <0.208.0> Alpha server startup\n",
+    )
+    .unwrap();
+
+    let work_dir = temp.path().join("project");
+    fs::create_dir_all(&work_dir).unwrap();
+    fs::write(
+        work_dir.join(".tool-versions"),
+        "rabbitmq 4.3.0-alpha.abc123\n",
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .current_dir(&work_dir)
+        .args(["alphas", "logs", "tail"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Alpha server startup"));
+}
+
+#[test]
+fn cli_releases_path_no_version_no_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "path"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no version specified"));
+}
+
+#[test]
+fn cli_releases_path_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "path", "-V", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_releases_path_installed() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "path", "-V", "4.2.3"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_releases_path_rejects_alpha() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected non-alpha version"));
+}
+
+#[test]
+fn cli_releases_path_with_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+    fs::write(temp.path().join(".tool-versions"), "rabbitmq 4.2.3\n").unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .current_dir(temp.path())
+        .args(["releases", "path"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_alphas_path_no_version_no_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "path"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no version specified"));
+}
+
+#[test]
+fn cli_alphas_path_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_path_installed() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "path", "-V", "4.3.0-alpha.abc123"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_alphas_path_rejects_release() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "path", "-V", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected alpha version"));
+}
+
+#[test]
+fn cli_alphas_path_with_tool_versions() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+    fs::write(
+        temp.path().join(".tool-versions"),
+        "rabbitmq 4.3.0-alpha.abc123\n",
+    )
+    .unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .current_dir(temp.path())
+        .args(["alphas", "path"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_releases_no_subcommand() {
+    frm_cmd()
+        .arg("releases")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Usage:"));
+}
+
+#[test]
+fn cli_alphas_no_subcommand() {
+    frm_cmd()
+        .arg("alphas")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Usage:"));
+}
+
+#[test]
+fn cli_releases_install_alias() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.2.3");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "i", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("already installed"));
+}
+
+#[test]
+fn cli_alphas_install_alias() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "i", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("already installed"));
+}
+
+#[test]
+fn cli_releases_reinstall_rejects_alpha() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(&version_dir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "reinstall", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("expected non-alpha version"));
+}
+
+#[test]
+fn cli_use_shows_releases_install_for_ga() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["use", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("frm releases install 4.2.3"));
+}
+
+#[test]
+fn cli_use_shows_alphas_install_for_alpha() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["use", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "frm alphas install 4.3.0-alpha.abc123",
+        ));
 }
