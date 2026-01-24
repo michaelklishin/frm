@@ -1,0 +1,63 @@
+#compdef frm
+
+# frm shell completion for zsh
+# Place in a directory in your $fpath, or add to ~/.zshrc:
+#   fpath=(/path/to/completions $fpath)
+#   autoload -Uz compinit && compinit
+# Or generate dynamically:
+#   eval "$(frm completions zsh)"
+
+_frm() {
+    local -a commands
+    commands=(
+        'list:List installed RabbitMQ versions'
+        'ls:List installed RabbitMQ versions'
+        'install:Install a RabbitMQ version'
+        'use:Output shell commands to use a specific version'
+        'default:Set the default RabbitMQ version'
+        'uninstall:Uninstall a RabbitMQ version'
+        'rm:Uninstall a RabbitMQ version'
+        'env:Output shell initialization script'
+        'completions:Generate shell completions'
+    )
+
+    _arguments -C \
+        '1: :->command' \
+        '*:: :->args'
+
+    case $state in
+        command)
+            _describe -t commands 'frm commands' commands
+            ;;
+        args)
+            case $words[1] in
+                install)
+                    _arguments \
+                        '1:version:' \
+                        '--force[Force reinstallation]' \
+                        '-f[Force reinstallation]'
+                    ;;
+                use)
+                    _arguments \
+                        '1:version:_frm_versions' \
+                        '--shell[Shell type]:shell:(bash zsh nu)' \
+                        '-s[Shell type]:shell:(bash zsh nu)'
+                    ;;
+                default|uninstall|rm)
+                    _arguments '1:version:_frm_versions'
+                    ;;
+                env|completions)
+                    _arguments '1:shell:(bash zsh nu)'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_frm_versions() {
+    local versions
+    versions=(${(f)"$(frm list 2>/dev/null | sed 's/^\[.\] //')"})
+    _describe -t versions 'installed versions' versions
+}
+
+_frm "$@"
