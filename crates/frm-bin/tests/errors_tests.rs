@@ -203,3 +203,24 @@ fn error_display_command_failed() {
     let err = Error::CommandFailed("exit code 1".into());
     assert_eq!(err.to_string(), "command failed: exit code 1");
 }
+
+#[test]
+fn exit_code_tanzu_version_mismatch() {
+    let err = Error::TanzuVersionMismatch {
+        expected: Version::new(4, 2, 3),
+        detected: Version::new(4, 2, 4),
+    };
+    assert_eq!(err.exit_code(), ExitCode::DataErr);
+}
+
+#[test]
+fn error_display_tanzu_version_mismatch() {
+    let err = Error::TanzuVersionMismatch {
+        expected: Version::new(4, 2, 3),
+        detected: Version::new(4, 2, 4),
+    };
+    assert_eq!(
+        err.to_string(),
+        "version mismatch: expected 4.2.3, detected 4.2.4 in tarball filename"
+    );
+}

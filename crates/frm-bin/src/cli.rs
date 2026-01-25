@@ -20,6 +20,7 @@ pub fn build_cli() -> Command {
         .arg_required_else_help(true)
         .subcommand(releases_command())
         .subcommand(alphas_command())
+        .subcommand(tanzu_command())
         .subcommand(conf_command())
         .subcommand(use_command())
         .subcommand(default_command())
@@ -261,11 +262,52 @@ fn alphas_clean_command() -> Command {
             - \"2025-01-01\" (absolute date)",
         )
         .arg(
-            Arg::new("older-than")
+            Arg::new("older_than")
                 .long("older-than")
                 .help("Remove alphas installed before this time (e.g., \"2 weeks ago\")")
                 .required(true)
                 .value_name("TIME"),
+        )
+}
+
+fn tanzu_command() -> Command {
+    Command::new("tanzu")
+        .about("Install Tanzu RabbitMQ from local tarballs")
+        .arg_required_else_help(true)
+        .subcommand(tanzu_install_command())
+}
+
+fn tanzu_install_command() -> Command {
+    Command::new("install")
+        .visible_alias("i")
+        .about("Install Tanzu RabbitMQ from a local tarball")
+        .long_about(
+            "Install Tanzu RabbitMQ from a local tarball.\n\n\
+            Requires both the tarball path and the expected version.\n\
+            The version in the tarball filename must match the specified version.\n\n\
+            Supported formats: .tar.xz, .tar.gz, .tgz",
+        )
+        .arg(
+            Arg::new("tarball_path")
+                .long("local-tanzu-rabbitmq-tarball-path")
+                .help("Path to the local Tanzu RabbitMQ tarball")
+                .required(true)
+                .value_name("PATH"),
+        )
+        .arg(
+            Arg::new("version")
+                .long("version")
+                .short('V')
+                .help("Expected RabbitMQ version (e.g., 4.2.3 or 4.2.3-rc.1)")
+                .required(true)
+                .value_name("VERSION"),
+        )
+        .arg(
+            Arg::new("force")
+                .long("force")
+                .short('f')
+                .help("Force reinstallation if version exists")
+                .action(ArgAction::SetTrue),
         )
 }
 

@@ -74,6 +74,12 @@ pub enum Error {
 
     #[error("invalid date/time: {0}")]
     InvalidDateTime(String),
+
+    #[error("version mismatch: expected {expected}, detected {detected} in tarball filename")]
+    TanzuVersionMismatch {
+        expected: Version,
+        detected: Version,
+    },
 }
 
 impl ExitCodeProvider for Error {
@@ -99,6 +105,7 @@ impl ExitCodeProvider for Error {
             Error::ExpectedNonAlphaVersion(_) => ExitCode::Usage,
             Error::NoAlphaReleasesFound => ExitCode::NoInput,
             Error::InvalidDateTime(_) => ExitCode::Usage,
+            Error::TanzuVersionMismatch { .. } => ExitCode::DataErr,
         }
     }
 }

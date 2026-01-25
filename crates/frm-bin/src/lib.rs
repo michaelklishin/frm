@@ -18,6 +18,7 @@ pub mod errors;
 pub mod paths;
 pub mod releases;
 pub mod shell;
+pub mod tanzu;
 pub mod timestamps;
 pub mod version;
 pub mod version_file;

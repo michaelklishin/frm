@@ -6,6 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::path::PathBuf;
 use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
@@ -156,7 +157,7 @@ async fn main() {
             }
             Some(("prune", _)) => commands::prune_alphas(&paths),
             Some(("clean", clean_sub)) => {
-                let older_than = clean_sub.get_one::<String>("older-than").unwrap();
+                let older_than = clean_sub.get_one::<String>("older_than").unwrap();
                 commands::clean_alphas(&paths, older_than)
             }
             Some(("logs", logs_sub)) => match logs_sub.subcommand() {
@@ -179,6 +180,23 @@ async fn main() {
                 }
                 _ => Ok(()),
             },
+            _ => Ok(()),
+        },
+
+        Some(("tanzu", sub)) => match sub.subcommand() {
+            Some(("install", install_sub)) => {
+                let tarball_path = install_sub
+                    .get_one::<String>("tarball_path")
+                    .map(PathBuf::from)
+                    .unwrap();
+                let version_str = install_sub.get_one::<String>("version").unwrap();
+                let force = install_sub.get_flag("force");
+
+                match version_str.parse::<Version>() {
+                    Ok(version) => commands::tanzu_install(&paths, &tarball_path, &version, force),
+                    Err(e) => Err(e),
+                }
+            }
             _ => Ok(()),
         },
 

@@ -20,6 +20,7 @@ mod path;
 mod prune;
 mod reinstall;
 mod show;
+mod tanzu_install;
 mod uninstall;
 mod use_cmd;
 
@@ -47,6 +48,7 @@ pub use reinstall::run_alpha as reinstall_alpha;
 pub use reinstall::run_release as reinstall_release;
 pub use show::CONFIG_FILES;
 pub use show::run as inspect;
+pub use tanzu_install::run as tanzu_install;
 pub use uninstall::run_alpha as uninstall_alpha;
 pub use uninstall::run_release as uninstall_release;
 pub use use_cmd::run as use_version;
