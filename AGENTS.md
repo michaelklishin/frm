@@ -4,6 +4,29 @@
 
 This is `frm`, a RabbitMQ version switcher based on the [generic binary builds](https://www.rabbitmq.com/docs/install-generic-unix).
 
+## Repository Layout
+
+This is a Rust workspace with two crates:
+
+ * `crates/frm-bin`: the CLI binary, `frm`
+ * `crates/rabbitmq-conf`: a library for parsing and manipulating `rabbitmq.conf` files, a partial port of RabbitMQ's (Erlang's) [`cuttlefish`](https://github.com/kyorai/cuttlefish)
+
+### The `frm-bin` Crate
+
+ * `main.rs`: entry point
+ * `cli.rs`: `clap`-based CLI parser
+ * `commands/`: command handlers (install, uninstall, list, conf, etc.)
+ * `version.rs`: RabbitMQ version parsing and comparison
+ * `paths.rs`: internal directory structure and operations
+ * `download.rs`: download and extraction of the generic binary builds
+ * `releases.rs`: GitHub releases API integration
+ * `timestamps.rs`, `versions_file.rs`: map versions to installation time, making time-based alpha release cleanup trivial
+
+### The `rabbitmq-conf` Crate
+
+ * `conf.rs`: parser for `rabbitmq.conf` files (the [`cuttlefish`](https://github.com/kyorai/cuttlefish) ini-like format)
+ * `keys.rs`: key validation against known RabbitMQ Cuttlefish schemas (both core `rabbit.schema` and those coming from all tier-1 plugins)
+ * `errors.rs`: library error types
 
 ## Build and Test
 
@@ -24,7 +47,7 @@ cargo nextest run -E "test(test_name)"
 
 ## Target Rust Version
 
- * This tool targets very recent Rust (such as `1.92`)
+ * This tool targets very recent Rust (such as `1.93`)
 
 ## Rust Code Style
 
