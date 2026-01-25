@@ -11,6 +11,10 @@ use std::fmt;
 use std::fs;
 use std::path::Path;
 
+use winnow::combinator::{alt, opt, preceded, terminated};
+use winnow::prelude::*;
+use winnow::token::{take_till, take_while};
+
 use crate::Result;
 use crate::errors::Error;
 use crate::keys;
@@ -34,6 +38,79 @@ pub struct RabbitMQConf {
     key_index: BTreeMap<String, usize>,
 }
 
+fn is_key_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '_' || c == '.'
+}
+
+fn key<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    take_while(1.., is_key_char).parse_next(input)
+}
+
+fn whitespace<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    take_while(0.., |c: char| c == ' ' || c == '\t').parse_next(input)
+}
+
+fn quoted_value<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    preceded('\'', terminated(take_till(0.., |c| c == '\''), '\'')).parse_next(input)
+}
+
+fn unquoted_value<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    take_till(0.., |c| c == '#' || c == '\n' || c == '\r').parse_next(input)
+}
+
+fn value(input: &mut &str) -> ModalResult<String> {
+    alt((
+        quoted_value.map(|s: &str| s.to_string()),
+        unquoted_value.map(|s: &str| s.trim().to_string()),
+    ))
+    .parse_next(input)
+}
+
+fn inline_comment(input: &mut &str) -> ModalResult<()> {
+    let _ = (whitespace, '#', take_while(0.., |c| c != '\n' && c != '\r')).parse_next(input)?;
+    Ok(())
+}
+
+fn setting_line(input: &mut &str) -> ModalResult<(String, String)> {
+    let _ = whitespace.parse_next(input)?;
+    let k = key.parse_next(input)?;
+    let _ = whitespace.parse_next(input)?;
+    let _ = '='.parse_next(input)?;
+    let _ = whitespace.parse_next(input)?;
+    let v = value.parse_next(input)?;
+    let _ = opt(inline_comment).parse_next(input)?;
+    Ok((k.to_string(), v))
+}
+
+fn parse_line(line: &str, line_num: usize) -> Result<Line> {
+    let trimmed = line.trim();
+
+    if trimmed.is_empty() {
+        return Ok(Line::Empty);
+    }
+
+    if trimmed.starts_with('#') {
+        return Ok(Line::Comment(line.to_string()));
+    }
+
+    let mut input = line;
+    match setting_line.parse_next(&mut input) {
+        Ok((k, v)) => {
+            if !keys::is_valid_key_format(&k) {
+                return Err(Error::ParseError {
+                    line: line_num,
+                    message: format!("invalid key format: {}", k),
+                });
+            }
+            Ok(Line::Setting { key: k, value: v })
+        }
+        Err(_) => Err(Error::ParseError {
+            line: line_num,
+            message: format!("invalid line: {}", line),
+        }),
+    }
+}
+
 impl RabbitMQConf {
     /// Create an empty configuration
     pub fn new() -> Self {
@@ -55,90 +132,16 @@ impl RabbitMQConf {
         let mut key_index = BTreeMap::new();
 
         for (line_num, line) in content.lines().enumerate() {
-            let trimmed = line.trim();
+            let parsed = parse_line(line, line_num + 1)?;
 
-            if trimmed.is_empty() {
-                lines.push(Line::Empty);
-            } else if trimmed.starts_with('#') {
-                lines.push(Line::Comment(line.to_string()));
-            } else if let Some((key, value)) = Self::parse_setting(line, line_num + 1)? {
+            if let Line::Setting { ref key, .. } = parsed {
                 key_index.insert(key.clone(), lines.len());
-                lines.push(Line::Setting { key, value });
-            } else {
-                return Err(Error::ParseError {
-                    line: line_num + 1,
-                    message: format!("invalid line: {}", line),
-                });
             }
+
+            lines.push(parsed);
         }
 
         Ok(Self { lines, key_index })
-    }
-
-    /// Parse a single setting line
-    fn parse_setting(line: &str, line_num: usize) -> Result<Option<(String, String)>> {
-        // Handle inline comments
-        let line_without_comment = if let Some(hash_pos) = Self::find_unquoted_hash(line) {
-            &line[..hash_pos]
-        } else {
-            line
-        };
-
-        let Some(eq_pos) = line_without_comment.find('=') else {
-            return Ok(None);
-        };
-
-        let key = line_without_comment[..eq_pos].trim();
-        let value_part = line_without_comment[eq_pos + 1..].trim();
-
-        if key.is_empty() {
-            return Err(Error::ParseError {
-                line: line_num,
-                message: "empty key".to_string(),
-            });
-        }
-
-        // Validate key format: dot-separated identifiers
-        if !keys::is_valid_key_format(key) {
-            return Err(Error::ParseError {
-                line: line_num,
-                message: format!("invalid key format: {}", key),
-            });
-        }
-
-        // Handle quoted values
-        let value = Self::parse_value(value_part);
-
-        Ok(Some((key.to_string(), value)))
-    }
-
-    /// Find the position of a # that is not inside quotes
-    fn find_unquoted_hash(line: &str) -> Option<usize> {
-        let mut in_single_quote = false;
-
-        for (i, c) in line.char_indices() {
-            match c {
-                '\'' => {
-                    in_single_quote = !in_single_quote;
-                }
-                '#' if !in_single_quote => {
-                    return Some(i);
-                }
-                _ => {}
-            }
-        }
-
-        None
-    }
-
-    /// Parse a value, handling single-quoted strings
-    fn parse_value(value: &str) -> String {
-        let trimmed = value.trim();
-        if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() >= 2 {
-            trimmed[1..trimmed.len() - 1].to_string()
-        } else {
-            trimmed.to_string()
-        }
     }
 
     /// Get the value for a key as a string

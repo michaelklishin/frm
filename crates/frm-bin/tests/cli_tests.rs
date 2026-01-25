@@ -957,7 +957,9 @@ fn cli_alphas_help() {
         .args(["alphas", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Install, manage, rotate alpha RabbitMQ releases"));
+        .stdout(predicate::str::contains(
+            "Install, manage, rotate alpha RabbitMQ releases",
+        ));
 }
 
 #[test]

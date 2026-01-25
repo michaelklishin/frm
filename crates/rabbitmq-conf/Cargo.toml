@@ -1,8 +1,8 @@
 [package]
 name = "rabbitmq-conf"
-version = "0.1.0"
+version = "0.9.0"
 edition = "2024"
-rust-version = "1.92"
+rust-version = "1.93"
 license = "MIT OR Apache-2.0"
 description = "Parser and manipulation library for RabbitMQ configuration files"
 repository = "https://github.com/michaelklishin/frm"
@@ -11,6 +11,7 @@ categories = ["config", "parsing"]
 
 [dependencies]
 thiserror = "2.0"
+winnow = "0.7"
 
 [dev-dependencies]
 proptest = "1.6"

@@ -368,3 +368,54 @@ fn is_pattern_without_wildcard() {
     assert!(!RabbitMQConf::is_pattern("listeners.tcp.default"));
     assert!(!RabbitMQConf::is_pattern("heartbeat"));
 }
+
+#[test]
+fn parse_empty_quoted_value() {
+    let conf = RabbitMQConf::parse("key = ''\n").unwrap();
+    assert_eq!(conf.get("key"), Some(""));
+}
+
+#[test]
+fn parse_quoted_value_with_inline_comment() {
+    let content = "key = 'value # not comment' # real comment\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(conf.get("key"), Some("value # not comment"));
+}
+
+#[test]
+fn parse_leading_whitespace() {
+    let content = "  listeners.tcp.default = 5672\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(conf.get("listeners.tcp.default"), Some("5672"));
+}
+
+#[test]
+fn parse_tab_whitespace() {
+    let content = "key\t=\tvalue\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(conf.get("key"), Some("value"));
+}
+
+#[test]
+fn parse_unclosed_quote_treated_as_literal() {
+    let content = "key = 'unclosed\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(conf.get("key"), Some("'unclosed"));
+}
+
+#[test]
+fn parse_encrypted_value_preserved() {
+    let content = "default_pass = encrypted:abc123def456\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(conf.get("default_pass"), Some("encrypted:abc123def456"));
+}
+
+#[test]
+fn parse_env_variable_syntax_preserved() {
+    let content = "cluster_name = deployment-$(DEPLOYMENT_ID)\n";
+    let conf = RabbitMQConf::parse(content).unwrap();
+    assert_eq!(
+        conf.get("cluster_name"),
+        Some("deployment-$(DEPLOYMENT_ID)")
+    );
+}

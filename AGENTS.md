@@ -24,7 +24,7 @@ This is a Rust workspace with two crates:
 
 ### The `rabbitmq-conf` Crate
 
- * `conf.rs`: parser for `rabbitmq.conf` files (the [`cuttlefish`](https://github.com/kyorai/cuttlefish) ini-like format)
+ * `conf.rs`: [`winnow`](https://docs.rs/winnow)-based parser for `rabbitmq.conf` files (the [`cuttlefish`](https://github.com/kyorai/cuttlefish) ini-like format)
  * `keys.rs`: key validation against known RabbitMQ Cuttlefish schemas (both core `rabbit.schema` and those coming from all tier-1 plugins)
  * `errors.rs`: library error types
 
