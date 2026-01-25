@@ -1,39 +1,8 @@
-[package]
-name = "frm"
-version = "0.7.0"
-edition = "2024"
-rust-version = "1.92"
-license = "MIT OR Apache-2.0"
-description = "Frakking RabbitMQ version Manager"
-repository = "https://github.com/michaelklishin/frm"
-keywords = ["rabbitmq", "version-manager", "cli"]
-categories = ["command-line-utilities", "development-tools"]
+[workspace]
+resolver = "3"
+members = ["crates/frm-bin", "crates/rabbitmq-conf"]
 
-[dependencies]
-bel7-cli = { version = "0.6", features = ["full"] }
-chrono = "0.4"
-chrono-english = "0.1"
-clap = { version = "4.5", features = ["derive"] }
-clap_complete = "4.5"
-dirs = "6.0"
-futures-util = "0.3"
-indicatif = "0.17"
-reqwest = { version = "0.12", features = ["stream", "json"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tar = "0.4"
-thiserror = "2.0"
-tokio = { version = "1.49", features = ["rt-multi-thread", "macros"] }
-toml = "0.8"
-xz2 = "0.1"
-
-[dev-dependencies]
-assert_cmd = "2.1"
-predicates = "3.1"
-proptest = "1.6"
-tempfile = "3.19"
-
-[lints.clippy]
+[workspace.lints.clippy]
 uninlined_format_args = "allow"
 
 [profile.dev]
