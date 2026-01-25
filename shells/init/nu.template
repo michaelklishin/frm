@@ -1,0 +1,23 @@
+# frm initialization for nushell
+# Add to ~/.config/nushell/config.nu:
+#   source ~/.local/frm/env.nu
+# Or run: frm env nu | save -f ~/.local/frm/env.nu
+
+def --env frm-use [version?: string] {
+    let ver = if ($version | is-empty) {
+        open "{{base_dir}}/default" | str trim
+    } else {
+        $version
+    }
+
+    let sbin = $"{{base_dir}}/versions/($ver)/sbin"
+    if ($sbin | path exists) {
+        $env.PATH = ($sbin | split row (char esep)) ++ ($env.PATH | where { |p| not ($p | str contains "{{base_dir}}/versions") })
+        $env.RABBITMQ_HOME = $"{{base_dir}}/versions/($ver)"
+    }
+}
+
+# Load default version if set
+if ("{{base_dir}}/default" | path exists) {
+    frm-use
+}

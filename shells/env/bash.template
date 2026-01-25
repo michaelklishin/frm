@@ -1,0 +1,2 @@
+export PATH="{{sbin_path}}:${PATH//*{{base_dir}}\/versions\/*/}"
+export RABBITMQ_HOME="{{version_dir}}"

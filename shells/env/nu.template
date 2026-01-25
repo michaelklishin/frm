@@ -1,0 +1,2 @@
+$env.PATH = ("{{sbin_path}}" | split row (char esep)) ++ ($env.PATH | where { |p| not ($p | str contains "{{base_dir}}/versions") })
+$env.RABBITMQ_HOME = "{{version_dir}}"

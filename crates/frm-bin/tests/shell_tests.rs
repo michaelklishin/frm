@@ -146,3 +146,30 @@ fn shell_env_script_removes_old_paths_nu() {
     assert!(script.contains("where { |p| not ($p | str contains"));
     assert!(script.contains("/versions\")"));
 }
+
+#[test]
+fn shell_env_script_no_unreplaced_placeholders() {
+    let (_temp, paths) = setup_temp_paths();
+    let version = Version::new(4, 2, 3);
+
+    for shell in [Shell::Bash, Shell::Zsh, Shell::Nu] {
+        let script = shell.env_script(&paths, &version);
+        assert!(
+            !script.contains("{{"),
+            "{shell} env_script contains unreplaced placeholder"
+        );
+    }
+}
+
+#[test]
+fn shell_init_script_no_unreplaced_placeholders() {
+    let (_temp, paths) = setup_temp_paths();
+
+    for shell in [Shell::Bash, Shell::Zsh, Shell::Nu] {
+        let script = shell.init_script(&paths);
+        assert!(
+            !script.contains("{{"),
+            "{shell} init_script contains unreplaced placeholder"
+        );
+    }
+}

@@ -23,6 +23,14 @@ pub enum Shell {
     Nu,
 }
 
+const ENV_BASH_TEMPLATE: &str = include_str!("../../../shells/env/bash.template");
+const ENV_ZSH_TEMPLATE: &str = include_str!("../../../shells/env/zsh.template");
+const ENV_NU_TEMPLATE: &str = include_str!("../../../shells/env/nu.template");
+
+const INIT_BASH_TEMPLATE: &str = include_str!("../../../shells/init/bash.template");
+const INIT_ZSH_TEMPLATE: &str = include_str!("../../../shells/init/zsh.template");
+const INIT_NU_TEMPLATE: &str = include_str!("../../../shells/init/nu.template");
+
 impl Shell {
     pub fn detect() -> Option<Self> {
         if let Ok(shell) = env::var("FRM_SHELL") {
@@ -47,114 +55,32 @@ impl Shell {
     }
 
     pub fn env_script(&self, paths: &Paths, version: &Version) -> String {
-        let sbin_path = paths.version_sbin_dir(version);
-        let sbin_str = sbin_path.display();
-        let base_dir = paths.base_dir().display();
+        let sbin_path = paths.version_sbin_dir(version).display().to_string();
+        let base_dir = paths.base_dir().display().to_string();
+        let version_dir = paths.version_dir(version).display().to_string();
 
-        match self {
-            Shell::Bash | Shell::Zsh => {
-                format!(
-                    r#"export PATH="{sbin_str}:${{PATH//*{base_dir}\/versions\/*/}}"
-export RABBITMQ_HOME="{version_dir}"
-"#,
-                    sbin_str = sbin_str,
-                    base_dir = base_dir,
-                    version_dir = paths.version_dir(version).display()
-                )
-            }
-            Shell::Nu => {
-                format!(
-                    r#"$env.PATH = ("{sbin_str}" | split row (char esep)) ++ ($env.PATH | where {{ |p| not ($p | str contains "{base_dir}/versions") }})
-$env.RABBITMQ_HOME = "{version_dir}"
-"#,
-                    sbin_str = sbin_str,
-                    base_dir = base_dir,
-                    version_dir = paths.version_dir(version).display()
-                )
-            }
-        }
+        let template = match self {
+            Shell::Bash => ENV_BASH_TEMPLATE,
+            Shell::Zsh => ENV_ZSH_TEMPLATE,
+            Shell::Nu => ENV_NU_TEMPLATE,
+        };
+
+        template
+            .replace("{{sbin_path}}", &sbin_path)
+            .replace("{{base_dir}}", &base_dir)
+            .replace("{{version_dir}}", &version_dir)
     }
 
     pub fn init_script(&self, paths: &Paths) -> String {
-        let base_dir = paths.base_dir().display();
+        let base_dir = paths.base_dir().display().to_string();
 
-        match self {
-            Shell::Bash => {
-                format!(
-                    r#"# frm initialization for bash
-# Add to ~/.bashrc or ~/.bash_profile:
-#   eval "$(frm env bash)"
+        let template = match self {
+            Shell::Bash => INIT_BASH_TEMPLATE,
+            Shell::Zsh => INIT_ZSH_TEMPLATE,
+            Shell::Nu => INIT_NU_TEMPLATE,
+        };
 
-__frm_use() {{
-    local version="$1"
-    if [ -z "$version" ]; then
-        version=$(cat "{base_dir}/default" 2>/dev/null)
-    fi
-    if [ -n "$version" ] && [ -d "{base_dir}/versions/$version/sbin" ]; then
-        export PATH="{base_dir}/versions/$version/sbin:${{PATH//*{base_dir}\/versions\/*/}}"
-        export RABBITMQ_HOME="{base_dir}/versions/$version"
-    fi
-}}
-
-# Load default version if set
-__frm_use
-"#,
-                    base_dir = base_dir
-                )
-            }
-            Shell::Zsh => {
-                format!(
-                    r#"# frm initialization for zsh
-# Add to ~/.zshrc:
-#   eval "$(frm env zsh)"
-
-__frm_use() {{
-    local version="$1"
-    if [[ -z "$version" ]]; then
-        version=$(cat "{base_dir}/default" 2>/dev/null)
-    fi
-    if [[ -n "$version" ]] && [[ -d "{base_dir}/versions/$version/sbin" ]]; then
-        export PATH="{base_dir}/versions/$version/sbin:${{PATH//*{base_dir}\/versions\/*/}}"
-        export RABBITMQ_HOME="{base_dir}/versions/$version"
-    fi
-}}
-
-# Load default version if set
-__frm_use
-"#,
-                    base_dir = base_dir
-                )
-            }
-            Shell::Nu => {
-                format!(
-                    r#"# frm initialization for nushell
-# Add to ~/.config/nushell/config.nu:
-#   source ~/.local/frm/env.nu
-# Or run: frm env nu | save -f ~/.local/frm/env.nu
-
-def --env frm-use [version?: string] {{
-    let ver = if ($version | is-empty) {{
-        open "{base_dir}/default" | str trim
-    }} else {{
-        $version
-    }}
-
-    let sbin = $"{base_dir}/versions/($ver)/sbin"
-    if ($sbin | path exists) {{
-        $env.PATH = ($sbin | split row (char esep)) ++ ($env.PATH | where {{ |p| not ($p | str contains "{base_dir}/versions") }})
-        $env.RABBITMQ_HOME = $"{base_dir}/versions/($ver)"
-    }}
-}}
-
-# Load default version if set
-if ("{base_dir}/default" | path exists) {{
-    frm-use
-}}
-"#,
-                    base_dir = base_dir
-                )
-            }
-        }
+        template.replace("{{base_dir}}", &base_dir)
     }
 }
 

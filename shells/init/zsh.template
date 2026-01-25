@@ -1,0 +1,17 @@
+# frm initialization for zsh
+# Add to ~/.zshrc:
+#   eval "$(frm env zsh)"
+
+__frm_use() {
+    local version="$1"
+    if [[ -z "$version" ]]; then
+        version=$(cat "{{base_dir}}/default" 2>/dev/null)
+    fi
+    if [[ -n "$version" ]] && [[ -d "{{base_dir}}/versions/$version/sbin" ]]; then
+        export PATH="{{base_dir}}/versions/$version/sbin:${PATH//*{{base_dir}}\/versions\/*/}"
+        export RABBITMQ_HOME="{{base_dir}}/versions/$version"
+    fi
+}
+
+# Load default version if set
+__frm_use
