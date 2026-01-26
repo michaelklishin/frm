@@ -6,7 +6,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#[cfg(unix)]
 use std::os::unix::process::CommandExt;
+#[cfg(windows)]
+use std::process;
 use std::process::Command;
 
 use crate::Result;
@@ -16,6 +19,7 @@ use crate::version::Version;
 
 const RABBITMQ_SERVER: &str = "rabbitmq-server";
 
+#[cfg(unix)]
 pub fn run(paths: &Paths, version: &Version) -> Result<()> {
     if !paths.version_installed(version) {
         return Err(Error::VersionNotInstalled(version.clone()));
@@ -33,4 +37,26 @@ pub fn run(paths: &Paths, version: &Version) -> Result<()> {
         server_path.display(),
         err
     )))
+}
+
+#[cfg(windows)]
+pub fn run(paths: &Paths, version: &Version) -> Result<()> {
+    if !paths.version_installed(version) {
+        return Err(Error::VersionNotInstalled(version.clone()));
+    }
+
+    let server_path = paths.version_sbin_dir(version).join(RABBITMQ_SERVER);
+    if !server_path.exists() {
+        return Err(Error::FileNotFound(server_path.display().to_string()));
+    }
+
+    let status = Command::new(&server_path).status().map_err(|e| {
+        Error::CommandFailed(format!(
+            "failed to execute {}: {}",
+            server_path.display(),
+            e
+        ))
+    })?;
+
+    process::exit(status.code().unwrap_or(1));
 }
