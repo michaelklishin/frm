@@ -57,6 +57,11 @@ jobs:
       - name: Free up disk space
         run: .github/scripts/free_disk_space.sh
 
+      - name: Setup Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 27
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
