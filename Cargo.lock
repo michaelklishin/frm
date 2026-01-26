@@ -446,8 +446,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "frm"
-version = "0.7.0"
+name = "frm-bin"
+version = "0.9.0"
 dependencies = [
  "assert_cmd",
  "bel7-cli",
