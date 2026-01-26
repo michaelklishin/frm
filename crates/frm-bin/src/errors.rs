@@ -11,7 +11,7 @@ use std::io;
 use bel7_cli::{ExitCode, ExitCodeProvider};
 use thiserror::Error;
 
-use crate::version::Version;
+use rabbitmq_versioning::Version;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -114,6 +114,15 @@ impl ExitCodeProvider for Error {
             Error::NoAlphaVersionsInstalled => ExitCode::NoInput,
             Error::InvalidDateTime(_) => ExitCode::Usage,
             Error::TanzuVersionMismatch { .. } => ExitCode::DataErr,
+        }
+    }
+}
+
+impl From<rabbitmq_versioning::Error> for Error {
+    fn from(e: rabbitmq_versioning::Error) -> Self {
+        match e {
+            rabbitmq_versioning::Error::InvalidVersion(s) => Error::InvalidVersion(s),
+            rabbitmq_versioning::Error::InvalidPrerelease(s) => Error::InvalidVersion(s),
         }
     }
 }

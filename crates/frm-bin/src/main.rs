@@ -29,7 +29,7 @@ fn resolve_version(paths: &Paths, version_arg: Option<&String>) -> Result<Versio
                 .latest_ga_version()?
                 .ok_or(Error::NoGAVersionsInstalled);
         }
-        return v.parse();
+        return v.parse().map_err(Into::into);
     }
 
     version_file::find_version().ok_or_else(|| {
@@ -45,7 +45,7 @@ fn resolve_alpha_version(paths: &Paths, version_arg: Option<&String>) -> Result<
                 .latest_alpha_version()?
                 .ok_or(Error::NoAlphaVersionsInstalled);
         }
-        return v.parse();
+        return v.parse().map_err(Into::into);
     }
 
     version_file::find_version().ok_or_else(|| {
@@ -153,7 +153,7 @@ async fn main() {
                     match version_arg {
                         Some(v) => match v.parse::<Version>() {
                             Ok(version) => commands::install_alpha(&paths, &version, force).await,
-                            Err(e) => Err(e),
+                            Err(e) => Err(e.into()),
                         },
                         None => Err(Error::InvalidVersion(
                             "specify a version or use --latest".into(),
@@ -216,7 +216,7 @@ async fn main() {
 
                 match version_str.parse::<Version>() {
                     Ok(version) => commands::tanzu_install(&paths, &tarball_path, &version, force),
-                    Err(e) => Err(e),
+                    Err(e) => Err(e.into()),
                 }
             }
             _ => Ok(()),

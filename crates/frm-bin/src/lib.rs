@@ -20,9 +20,10 @@ pub mod releases;
 pub mod shell;
 pub mod tanzu;
 pub mod timestamps;
-pub mod version;
 pub mod version_file;
 
 pub use errors::Error;
+pub use rabbitmq_versioning as version;
+pub use rabbitmq_versioning::{Prerelease, Version};
 
 pub type Result<T> = std::result::Result<T, Error>;

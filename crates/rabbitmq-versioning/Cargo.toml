@@ -1,0 +1,23 @@
+[package]
+name = "rabbitmq-versioning"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "RabbitMQ version parsing, comparison, and URL generation"
+readme = "README.md"
+keywords = ["rabbitmq", "version", "parser", "semver"]
+categories = ["parsing", "data-structures"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+
+[dev-dependencies]
+proptest = "1.6"
+
+[lints]
+workspace = true
