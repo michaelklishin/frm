@@ -440,75 +440,75 @@ fn cli_releases_reinstall_help() {
 }
 
 #[test]
-fn cli_env_bash() {
+fn cli_shell_env_bash() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["env", "bash"])
+        .args(["shell", "env", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("frm initialization for bash"));
 }
 
 #[test]
-fn cli_env_zsh() {
+fn cli_shell_env_zsh() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["env", "zsh"])
+        .args(["shell", "env", "zsh"])
         .assert()
         .success()
         .stdout(predicate::str::contains("frm initialization for zsh"));
 }
 
 #[test]
-fn cli_env_nu() {
+fn cli_shell_env_nu() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["env", "nu"])
+        .args(["shell", "env", "nu"])
         .assert()
         .success()
         .stdout(predicate::str::contains("frm initialization for nushell"));
 }
 
 #[test]
-fn cli_completions_bash() {
+fn cli_shell_completions_bash() {
     frm_cmd()
-        .args(["completions", "bash"])
+        .args(["shell", "completions", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("_frm"));
 }
 
 #[test]
-fn cli_completions_zsh() {
+fn cli_shell_completions_zsh() {
     frm_cmd()
-        .args(["completions", "zsh"])
+        .args(["shell", "completions", "zsh"])
         .assert()
         .success()
         .stdout(predicate::str::contains("#compdef"));
 }
 
 #[test]
-fn cli_completions_fish() {
+fn cli_shell_completions_fish() {
     frm_cmd()
-        .args(["completions", "fish"])
+        .args(["shell", "completions", "fish"])
         .assert()
         .success()
         .stdout(predicate::str::contains("complete -c frm"));
 }
 
 #[test]
-fn cli_completions_powershell() {
+fn cli_shell_completions_powershell() {
     frm_cmd()
-        .args(["completions", "powershell"])
+        .args(["shell", "completions", "powershell"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Register-ArgumentCompleter"));
 }
 
 #[test]
-fn cli_completions_elvish() {
+fn cli_shell_completions_elvish() {
     frm_cmd()
-        .args(["completions", "elvish"])
+        .args(["shell", "completions", "elvish"])
         .assert()
         .success()
         .stdout(predicate::str::contains(
@@ -517,21 +517,88 @@ fn cli_completions_elvish() {
 }
 
 #[test]
-fn cli_completions_nushell() {
+fn cli_shell_completions_nushell() {
     frm_cmd()
-        .args(["completions", "nushell"])
+        .args(["shell", "completions", "nushell"])
         .assert()
         .success()
         .stdout(predicate::str::contains("module completions"));
 }
 
 #[test]
-fn cli_completions_nushell_alias() {
+fn cli_shell_completions_nushell_alias() {
     frm_cmd()
-        .args(["completions", "nu"])
+        .args(["shell", "completions", "nu"])
         .assert()
         .success()
         .stdout(predicate::str::contains("module completions"));
+}
+
+#[test]
+fn cli_shell_requires_subcommand() {
+    frm_cmd()
+        .args(["shell"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Usage: frm shell"));
+}
+
+#[test]
+fn cli_help_shows_shell_command() {
+    frm_cmd()
+        .args(["--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("shell"))
+        .stdout(predicate::str::contains("Shell-related operations"));
+}
+
+#[test]
+fn cli_shell_help_shows_subcommands() {
+    frm_cmd()
+        .args(["shell", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("completions"))
+        .stdout(predicate::str::contains("env"));
+}
+
+#[test]
+fn cli_shell_completions_invalid_shell() {
+    frm_cmd()
+        .args(["shell", "completions", "invalid"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid value 'invalid'"));
+}
+
+#[test]
+fn cli_shell_env_invalid_shell() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["shell", "env", "invalid"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid value 'invalid'"));
+}
+
+#[test]
+fn cli_shell_completions_requires_shell() {
+    frm_cmd()
+        .args(["shell", "completions"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("<shell>"));
+}
+
+#[test]
+fn cli_shell_env_requires_shell() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["shell", "env"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("<shell>"));
 }
 
 #[test]

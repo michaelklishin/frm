@@ -308,15 +308,17 @@ async fn main() {
             }
         }
 
-        Some(("env", sub)) => {
-            let shell = sub.get_one::<Shell>("shell").unwrap();
-            commands::env(&paths, *shell)
-        }
-
-        Some(("completions", sub)) => {
-            let shell = sub.get_one::<CompletionShell>("shell").unwrap();
-            commands::completions(*shell)
-        }
+        Some(("shell", sub)) => match sub.subcommand() {
+            Some(("env", env_sub)) => {
+                let shell = env_sub.get_one::<Shell>("shell").unwrap();
+                commands::env(&paths, *shell)
+            }
+            Some(("completions", completions_sub)) => {
+                let shell = completions_sub.get_one::<CompletionShell>("shell").unwrap();
+                commands::completions(*shell)
+            }
+            _ => Ok(()),
+        },
 
         _ => Ok(()),
     };

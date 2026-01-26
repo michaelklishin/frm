@@ -31,7 +31,7 @@ fn frm_cmd_with_dir(dir: &TempDir) -> Command {
 // ============================================================================
 
 #[test]
-fn e2e_releases_install_and_list() {
+fn end_to_end_releases_install_and_list() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -56,7 +56,7 @@ fn e2e_releases_install_and_list() {
 }
 
 #[test]
-fn e2e_releases_install_already_installed() {
+fn end_to_end_releases_install_already_installed() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -72,7 +72,7 @@ fn e2e_releases_install_already_installed() {
 }
 
 #[test]
-fn e2e_releases_install_force_reinstall() {
+fn end_to_end_releases_install_force_reinstall() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -95,7 +95,7 @@ fn e2e_releases_install_force_reinstall() {
 // ============================================================================
 
 #[test]
-fn e2e_releases_path() {
+fn end_to_end_releases_path() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -115,7 +115,7 @@ fn e2e_releases_path() {
 // ============================================================================
 
 #[test]
-fn e2e_releases_uninstall() {
+fn end_to_end_releases_uninstall() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -143,7 +143,7 @@ fn e2e_releases_uninstall() {
 // ============================================================================
 
 #[test]
-fn e2e_releases_reinstall() {
+fn end_to_end_releases_reinstall() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -170,7 +170,7 @@ fn e2e_releases_reinstall() {
 // ============================================================================
 
 #[test]
-fn e2e_use_installed_version() {
+fn end_to_end_use_installed_version() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -187,7 +187,7 @@ fn e2e_use_installed_version() {
 }
 
 #[test]
-fn e2e_use_latest() {
+fn end_to_end_use_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -212,7 +212,7 @@ fn e2e_use_latest() {
 // ============================================================================
 
 #[test]
-fn e2e_default_and_list() {
+fn end_to_end_default_and_list() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -237,7 +237,7 @@ fn e2e_default_and_list() {
 }
 
 #[test]
-fn e2e_default_latest() {
+fn end_to_end_default_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -265,7 +265,7 @@ fn e2e_default_latest() {
 // ============================================================================
 
 #[test]
-fn e2e_conf_set_and_get_key() {
+fn end_to_end_conf_set_and_get_key() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -303,7 +303,7 @@ fn e2e_conf_set_and_get_key() {
 // ============================================================================
 
 #[test]
-fn e2e_inspect_rabbitmq_conf() {
+fn end_to_end_inspect_rabbitmq_conf() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -319,7 +319,7 @@ fn e2e_inspect_rabbitmq_conf() {
 }
 
 #[test]
-fn e2e_inspect_enabled_plugins() {
+fn end_to_end_inspect_enabled_plugins() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -339,7 +339,7 @@ fn e2e_inspect_enabled_plugins() {
 // ============================================================================
 
 #[test]
-fn e2e_alphas_install_latest_and_list() {
+fn end_to_end_alphas_install_latest_and_list() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -356,7 +356,7 @@ fn e2e_alphas_install_latest_and_list() {
 }
 
 #[test]
-fn e2e_alphas_install_and_uninstall() {
+fn end_to_end_alphas_install_and_uninstall() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -390,7 +390,7 @@ fn e2e_alphas_install_and_uninstall() {
 }
 
 #[test]
-fn e2e_alphas_prune() {
+fn end_to_end_alphas_prune() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -412,7 +412,7 @@ fn e2e_alphas_prune() {
 }
 
 #[test]
-fn e2e_alphas_path() {
+fn end_to_end_alphas_path() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -444,7 +444,7 @@ fn e2e_alphas_path() {
 // ============================================================================
 
 #[test]
-fn e2e_tool_versions_file() {
+fn end_to_end_tool_versions_file() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -480,7 +480,7 @@ fn e2e_tool_versions_file() {
 // ============================================================================
 
 #[test]
-fn e2e_full_workflow() {
+fn end_to_end_full_workflow() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -559,7 +559,7 @@ fn e2e_full_workflow() {
 // ============================================================================
 
 #[test]
-fn e2e_releases_uninstall_latest() {
+fn end_to_end_releases_uninstall_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -593,7 +593,7 @@ fn e2e_releases_uninstall_latest() {
 // ============================================================================
 
 #[test]
-fn e2e_alphas_uninstall_latest() {
+fn end_to_end_alphas_uninstall_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -625,7 +625,7 @@ fn e2e_alphas_uninstall_latest() {
 // ============================================================================
 
 #[test]
-fn e2e_cli_rabbitmqctl_version() {
+fn end_to_end_cli_rabbitmqctl_version() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -641,7 +641,7 @@ fn e2e_cli_rabbitmqctl_version() {
 }
 
 #[test]
-fn e2e_cli_rabbitmqctl_version_with_latest() {
+fn end_to_end_cli_rabbitmqctl_version_with_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -661,7 +661,7 @@ fn e2e_cli_rabbitmqctl_version_with_latest() {
 // ============================================================================
 
 #[test]
-fn e2e_scenario_version_switching() {
+fn end_to_end_scenario_version_switching() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -702,7 +702,7 @@ fn e2e_scenario_version_switching() {
 }
 
 #[test]
-fn e2e_scenario_config_across_versions() {
+fn end_to_end_scenario_config_across_versions() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -759,7 +759,7 @@ fn e2e_scenario_config_across_versions() {
 }
 
 #[test]
-fn e2e_scenario_install_configure_run_cli() {
+fn end_to_end_scenario_install_configure_run_cli() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -804,7 +804,7 @@ fn e2e_scenario_install_configure_run_cli() {
 }
 
 #[test]
-fn e2e_scenario_mixed_releases_and_alphas() {
+fn end_to_end_scenario_mixed_releases_and_alphas() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -858,7 +858,7 @@ fn e2e_scenario_mixed_releases_and_alphas() {
 }
 
 #[test]
-fn e2e_scenario_project_workflow_with_tool_versions() {
+fn end_to_end_scenario_project_workflow_with_tool_versions() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -929,7 +929,7 @@ fn e2e_scenario_project_workflow_with_tool_versions() {
 }
 
 #[test]
-fn e2e_scenario_upgrade_workflow() {
+fn end_to_end_scenario_upgrade_workflow() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -1004,7 +1004,7 @@ fn e2e_scenario_upgrade_workflow() {
 }
 
 #[test]
-fn e2e_scenario_inspect_all_config_files() {
+fn end_to_end_scenario_inspect_all_config_files() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)

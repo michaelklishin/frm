@@ -38,8 +38,7 @@ pub fn build_cli() -> Command {
         .subcommand(cli_command())
         .subcommand(fg_command())
         .subcommand(inspect_command())
-        .subcommand(env_command())
-        .subcommand(completions_command())
+        .subcommand(shell_command())
 }
 
 fn releases_command() -> Command {
@@ -456,15 +455,23 @@ fn default_command() -> Command {
         )
 }
 
-fn env_command() -> Command {
+fn shell_command() -> Command {
+    Command::new("shell")
+        .about("Shell-related operations")
+        .arg_required_else_help(true)
+        .subcommand(shell_completions_command())
+        .subcommand(shell_env_command())
+}
+
+fn shell_env_command() -> Command {
     Command::new("env")
         .about("Output shell initialization script")
         .long_about(
             "Output shell initialization script.\n\n\
             Add to your shell profile:\n\
-            - bash: eval \"$(frm env bash)\" in ~/.bashrc\n\
-            - zsh: eval \"$(frm env zsh)\" in ~/.zshrc\n\
-            - nu: frm env nu | save -f ~/.local/frm/env.nu, then source in config.nu\n\n\
+            - bash: eval \"$(frm shell env bash)\" in ~/.bashrc\n\
+            - zsh: eval \"$(frm shell env zsh)\" in ~/.zshrc\n\
+            - nu: frm shell env nu | save -f ~/.local/frm/env.nu, then source in config.nu\n\n\
             After setup, use 'frm-use <version>' to switch versions.",
         )
         .arg(
@@ -473,6 +480,18 @@ fn env_command() -> Command {
                 .required(true)
                 .index(1)
                 .value_parser(clap::value_parser!(Shell)),
+        )
+}
+
+fn shell_completions_command() -> Command {
+    Command::new("completions")
+        .about("Generate shell completions")
+        .arg(
+            Arg::new("shell")
+                .help("Target shell (bash, elvish, fish, nushell, powershell, zsh)")
+                .required(true)
+                .index(1)
+                .value_parser(clap::value_parser!(CompletionShell)),
         )
 }
 
@@ -537,16 +556,4 @@ fn version_arg() -> Arg {
         .short('V')
         .help("RabbitMQ version to use, or uses .tool-versions")
         .value_name("VERSION")
-}
-
-fn completions_command() -> Command {
-    Command::new("completions")
-        .about("Generate shell completions")
-        .arg(
-            Arg::new("shell")
-                .help("Target shell (bash, elvish, fish, nushell, powershell, zsh)")
-                .required(true)
-                .index(1)
-                .value_parser(clap::value_parser!(CompletionShell)),
-        )
 }
