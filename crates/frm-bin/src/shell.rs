@@ -23,13 +23,13 @@ pub enum Shell {
     Nu,
 }
 
-const ENV_BASH_TEMPLATE: &str = include_str!("../../../shells/env/bash.template");
-const ENV_ZSH_TEMPLATE: &str = include_str!("../../../shells/env/zsh.template");
-const ENV_NU_TEMPLATE: &str = include_str!("../../../shells/env/nu.template");
+const ENV_BASH_TEMPLATE: &str = include_str!("../shells/env/bash.template");
+const ENV_ZSH_TEMPLATE: &str = include_str!("../shells/env/zsh.template");
+const ENV_NU_TEMPLATE: &str = include_str!("../shells/env/nu.template");
 
-const INIT_BASH_TEMPLATE: &str = include_str!("../../../shells/init/bash.template");
-const INIT_ZSH_TEMPLATE: &str = include_str!("../../../shells/init/zsh.template");
-const INIT_NU_TEMPLATE: &str = include_str!("../../../shells/init/nu.template");
+const INIT_BASH_TEMPLATE: &str = include_str!("../shells/init/bash.template");
+const INIT_ZSH_TEMPLATE: &str = include_str!("../shells/init/zsh.template");
+const INIT_NU_TEMPLATE: &str = include_str!("../shells/init/nu.template");
 
 impl Shell {
     pub fn detect() -> Option<Self> {
