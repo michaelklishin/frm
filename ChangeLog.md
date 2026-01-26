@@ -4,12 +4,13 @@
 
 ### Enhancements
 
- * `frm completions` now supports Nu shell (pass `nushell` or `nu` as the `--shell` argument value)
+ * Group `env` and `completions` were moved under a new group, `shell`, so use them as `frm shell env` and `frm shell completions`
+ * `shell completions` now supports Nu shell (pass `nushell` or `nu` as the argument value)
  * New hidden subcommands `releases completions` and `alphas completions` generate shell completion scripts
  * Initial CLI documentation in `README.md`
 
  ### Dependency Updates
- 
+
   * Extracted `rabbitmq-versioning` crate for RabbitMQ version parsing, comparison, and URL generation
 
 
