@@ -1,6 +1,16 @@
 # frm Change Log
 
-## v0.10.0 (in development)
+## v0.11.0 (in development)
+
+No changes yet.
+
+
+## v0.10.0 (Jan 25, 2026)
+
+### Enhancements
+
+ * `use` and `default` commands now accept `latest` as a special version value; the value resolves to the most recent installed GA release
+ * `releases uninstall`, `alphas uninstall`, and `alphas reinstall` also support `latest` for `--version` values
 
 ### Dependency Upgrades
 
