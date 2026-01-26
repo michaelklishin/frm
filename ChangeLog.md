@@ -11,7 +11,7 @@ No changes yet.
 
  * Group `env` and `completions` were moved under a new group, `shell`, so use them as `frm shell env` and `frm shell completions`
  * `shell completions` now supports Nu shell (pass `nushell` or `nu` as the argument value)
- * New hidden subcommands `releases completions` and `alphas completions` generate shell completion scripts
+ * New hidden subcommands `releases completions` and `alphas completions` generate shell completion scripts for available versions
  * Initial CLI documentation in `README.md`
 
  ### Dependency Updates
