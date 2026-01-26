@@ -4,7 +4,13 @@
 
 ### Enhancements
 
- * Extracted `rabbitmq-versioning` crate for RabbitMQ version parsing, comparison, and URL generation
+ * `frm completions` now supports Nu shell (pass `nushell` or `nu` as the `--shell` argument value)
+ * New hidden subcommands `releases completions` and `alphas completions` generate shell completion scripts
+ * Initial CLI documentation in `README.md`
+
+ ### Dependency Updates
+ 
+  * Extracted `rabbitmq-versioning` crate for RabbitMQ version parsing, comparison, and URL generation
 
 
 ## v0.10.0 (Jan 25, 2026)
@@ -14,7 +20,7 @@
  * `use` and `default` commands now accept `latest` as a special version value; the value resolves to the most recent installed GA release
  * `releases uninstall`, `alphas uninstall`, and `alphas reinstall` also support `latest` for `--version` values
 
-### Dependency Upgrades
+### Dependency Updates
 
  * `indicatif` upgraded to `0.18.3`
  * `reqwest` upgraded to `0.13.x`
