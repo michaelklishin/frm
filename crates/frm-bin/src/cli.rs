@@ -6,11 +6,22 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use clap::{Arg, ArgAction, Command};
-use clap_complete::Shell as CompletionShell;
+use clap::{Arg, ArgAction, Command, ValueEnum};
 
 use crate::commands::{CONFIG_FILES, RABBITMQ_TOOLS};
 use crate::shell::Shell;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum CompletionShell {
+    Bash,
+    Elvish,
+    Fish,
+    #[value(name = "nushell", alias = "nu")]
+    Nushell,
+    #[value(name = "powershell")]
+    PowerShell,
+    Zsh,
+}
 
 pub fn build_cli() -> Command {
     Command::new("frm")
@@ -41,6 +52,13 @@ fn releases_command() -> Command {
         .subcommand(releases_install_command())
         .subcommand(releases_reinstall_command())
         .subcommand(releases_uninstall_command())
+        .subcommand(releases_completions_command())
+}
+
+fn releases_completions_command() -> Command {
+    Command::new("completions")
+        .about("Output installed release versions for shell completion")
+        .hide(true)
 }
 
 fn releases_list_command() -> Command {
@@ -149,6 +167,13 @@ fn alphas_command() -> Command {
         .subcommand(alphas_uninstall_command())
         .subcommand(alphas_prune_command())
         .subcommand(alphas_clean_command())
+        .subcommand(alphas_completions_command())
+}
+
+fn alphas_completions_command() -> Command {
+    Command::new("completions")
+        .about("Output installed alpha versions for shell completion")
+        .hide(true)
 }
 
 fn alphas_list_command() -> Command {
@@ -505,7 +530,7 @@ fn completions_command() -> Command {
         .about("Generate shell completions")
         .arg(
             Arg::new("shell")
-                .help("Target shell")
+                .help("Target shell (bash, elvish, fish, nushell, powershell, zsh)")
                 .required(true)
                 .index(1)
                 .value_parser(clap::value_parser!(CompletionShell)),

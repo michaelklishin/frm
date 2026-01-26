@@ -8,13 +8,24 @@
 
 use std::io;
 
-use clap_complete::{Shell, generate};
+use clap_complete::Shell as ClapShell;
+use clap_complete::generate;
+use clap_complete_nushell::Nushell;
 
 use crate::Result;
-use crate::cli::build_cli;
+use crate::cli::{CompletionShell, build_cli};
 
-pub fn run(shell: Shell) -> Result<()> {
+pub fn run(shell: CompletionShell) -> Result<()> {
     let mut cmd = build_cli();
-    generate(shell, &mut cmd, "frm", &mut io::stdout());
+    match shell {
+        CompletionShell::Bash => generate(ClapShell::Bash, &mut cmd, "frm", &mut io::stdout()),
+        CompletionShell::Elvish => generate(ClapShell::Elvish, &mut cmd, "frm", &mut io::stdout()),
+        CompletionShell::Fish => generate(ClapShell::Fish, &mut cmd, "frm", &mut io::stdout()),
+        CompletionShell::Nushell => generate(Nushell, &mut cmd, "frm", &mut io::stdout()),
+        CompletionShell::PowerShell => {
+            generate(ClapShell::PowerShell, &mut cmd, "frm", &mut io::stdout())
+        }
+        CompletionShell::Zsh => generate(ClapShell::Zsh, &mut cmd, "frm", &mut io::stdout()),
+    }
     Ok(())
 }

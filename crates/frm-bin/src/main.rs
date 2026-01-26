@@ -10,9 +10,8 @@ use std::path::PathBuf;
 use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
-use clap_complete::Shell as CompletionShell;
 
-use frm::cli::build_cli;
+use frm::cli::{CompletionShell, build_cli};
 use frm::commands;
 use frm::errors::Error;
 use frm::paths::Paths;
@@ -68,6 +67,7 @@ async fn main() {
     let result = match matches.subcommand() {
         Some(("releases", sub)) => match sub.subcommand() {
             Some(("list", _)) => commands::list_releases(&paths),
+            Some(("completions", _)) => commands::completions_releases(&paths),
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 
@@ -126,6 +126,7 @@ async fn main() {
 
         Some(("alphas", sub)) => match sub.subcommand() {
             Some(("list", _)) => commands::list_alphas(&paths),
+            Some(("completions", _)) => commands::completions_alphas(&paths),
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 

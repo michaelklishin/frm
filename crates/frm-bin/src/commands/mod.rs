@@ -35,6 +35,8 @@ pub use env::run as env;
 pub use fg_node::run as fg_node;
 pub use install::run_alpha as install_alpha;
 pub use install::run_release as install_release;
+pub use list::completions_alphas;
+pub use list::completions_releases;
 pub use list::run_alphas as list_alphas;
 pub use list::run_releases as list_releases;
 pub use logs::path_alpha as logs_path_alpha;

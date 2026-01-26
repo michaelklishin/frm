@@ -60,3 +60,33 @@ fn print_versions(paths: &Paths, versions: &[Version]) -> Result<()> {
 
     Ok(())
 }
+
+pub fn completions_releases(paths: &Paths) -> Result<()> {
+    let versions = paths.installed_versions()?;
+    let releases: Vec<_> = versions
+        .into_iter()
+        .filter(|v| !v.is_distributed_via_server_packages_repository())
+        .collect();
+
+    println!("latest");
+    for version in releases {
+        println!("{}", version);
+    }
+
+    Ok(())
+}
+
+pub fn completions_alphas(paths: &Paths) -> Result<()> {
+    let versions = paths.installed_versions()?;
+    let alphas: Vec<_> = versions
+        .into_iter()
+        .filter(|v| v.is_distributed_via_server_packages_repository())
+        .collect();
+
+    println!("latest");
+    for version in alphas {
+        println!("{}", version);
+    }
+
+    Ok(())
+}
