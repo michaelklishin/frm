@@ -125,10 +125,14 @@ fn releases_uninstall_command() -> Command {
     Command::new("uninstall")
         .visible_alias("rm")
         .about("Uninstall a stable RabbitMQ release")
+        .long_about(
+            "Uninstall a stable RabbitMQ release.\n\n\
+            Use 'latest' to uninstall the most recent installed GA version.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
+        )
         .arg(
             Arg::new("version")
-                .help("Version to uninstall (e.g., 4.2.3)")
-                .required(true)
+                .help("Version to uninstall (e.g., 4.2.3 or 'latest')")
                 .index(1),
         )
 }
@@ -222,12 +226,13 @@ fn alphas_reinstall_command() -> Command {
         .about("Reinstall an alpha RabbitMQ release")
         .long_about(
             "Reinstall an alpha RabbitMQ release.\n\n\
-            Removes the existing installation and downloads a fresh copy.",
+            Removes the existing installation and downloads a fresh copy.\n\n\
+            Use 'latest' to reinstall the most recent installed alpha version.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
         )
         .arg(
             Arg::new("version")
-                .help("Alpha version to reinstall (e.g., 4.3.0-alpha.132057c7)")
-                .required(true)
+                .help("Alpha version to reinstall (e.g., 4.3.0-alpha.132057c7 or 'latest')")
                 .index(1),
         )
 }
@@ -236,10 +241,14 @@ fn alphas_uninstall_command() -> Command {
     Command::new("uninstall")
         .visible_alias("rm")
         .about("Uninstall an alpha RabbitMQ release")
+        .long_about(
+            "Uninstall an alpha RabbitMQ release.\n\n\
+            Use 'latest' to uninstall the most recent installed alpha version.\n\n\
+            If no version is specified, tries to use the local .tool-versions file.",
+        )
         .arg(
             Arg::new("version")
-                .help("Alpha version to uninstall (e.g., 4.3.0-alpha.132057c7)")
-                .required(true)
+                .help("Alpha version to uninstall (e.g., 4.3.0-alpha.132057c7 or 'latest')")
                 .index(1),
         )
 }

@@ -123,6 +123,14 @@ impl Paths {
         let versions = self.installed_versions()?;
         Ok(versions.into_iter().rev().find(|v| v.is_ga()))
     }
+
+    pub fn latest_alpha_version(&self) -> Result<Option<Version>> {
+        let versions = self.installed_versions()?;
+        Ok(versions
+            .into_iter()
+            .rev()
+            .find(|v| v.is_distributed_via_server_packages_repository()))
+    }
 }
 
 impl Default for Paths {

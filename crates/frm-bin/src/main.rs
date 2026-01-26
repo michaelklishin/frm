@@ -37,6 +37,22 @@ fn resolve_version(paths: &Paths, version_arg: Option<&String>) -> Result<Versio
     })
 }
 
+fn resolve_alpha_version(paths: &Paths, version_arg: Option<&String>) -> Result<Version, Error> {
+    if let Some(v) = version_arg {
+        let v = v.trim();
+        if v.eq_ignore_ascii_case("latest") {
+            return paths
+                .latest_alpha_version()?
+                .ok_or(Error::NoAlphaVersionsInstalled);
+        }
+        return v.parse();
+    }
+
+    version_file::find_version().ok_or_else(|| {
+        Error::InvalidVersion("no version specified and no .tool-versions found".into())
+    })
+}
+
 #[tokio::main]
 async fn main() {
     let matches = build_cli().get_matches();
@@ -78,9 +94,9 @@ async fn main() {
                 }
             }
             Some(("uninstall", uninstall_sub)) => {
-                let version_str = uninstall_sub.get_one::<String>("version").unwrap();
+                let version_arg = uninstall_sub.get_one::<String>("version");
 
-                match version_str.parse::<Version>() {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_release(&paths, &version),
                     Err(e) => Err(e),
                 }
@@ -146,17 +162,17 @@ async fn main() {
                 }
             }
             Some(("reinstall", reinstall_sub)) => {
-                let version_str = reinstall_sub.get_one::<String>("version").unwrap();
+                let version_arg = reinstall_sub.get_one::<String>("version");
 
-                match version_str.parse::<Version>() {
+                match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::reinstall_alpha(&paths, &version).await,
                     Err(e) => Err(e),
                 }
             }
             Some(("uninstall", uninstall_sub)) => {
-                let version_str = uninstall_sub.get_one::<String>("version").unwrap();
+                let version_arg = uninstall_sub.get_one::<String>("version");
 
-                match version_str.parse::<Version>() {
+                match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_alpha(&paths, &version),
                     Err(e) => Err(e),
                 }

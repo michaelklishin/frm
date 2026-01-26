@@ -218,6 +218,76 @@ fn paths_installed_versions_with_alphas() {
 }
 
 #[test]
+fn latest_alpha_version_empty() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let latest = paths.latest_alpha_version().unwrap();
+    assert!(latest.is_none());
+}
+
+#[test]
+fn latest_alpha_version_only_ga() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let ga1 = Version::new(4, 2, 3);
+    let ga2 = Version::new(4, 1, 0);
+
+    fs::create_dir_all(paths.version_dir(&ga1)).unwrap();
+    fs::create_dir_all(paths.version_dir(&ga2)).unwrap();
+
+    let latest = paths.latest_alpha_version().unwrap();
+    assert!(latest.is_none());
+}
+
+#[test]
+fn latest_alpha_version_single_alpha() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let alpha = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("abc123".into()));
+    fs::create_dir_all(paths.version_dir(&alpha)).unwrap();
+
+    let latest = paths.latest_alpha_version().unwrap();
+    assert_eq!(latest, Some(alpha));
+}
+
+#[test]
+fn latest_alpha_version_multiple_alphas() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let alpha1 = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("1".into()));
+    let alpha2 = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("2".into()));
+
+    fs::create_dir_all(paths.version_dir(&alpha1)).unwrap();
+    fs::create_dir_all(paths.version_dir(&alpha2)).unwrap();
+
+    let latest = paths.latest_alpha_version().unwrap();
+    assert_eq!(latest, Some(alpha2));
+}
+
+#[test]
+fn latest_alpha_version_mixed() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let ga = Version::new(4, 2, 3);
+    let alpha = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("abc123".into()));
+    let beta = Version::with_prerelease(4, 3, 0, Prerelease::Beta("1".into()));
+    let rc = Version::with_prerelease(4, 3, 0, Prerelease::Rc("1".into()));
+
+    fs::create_dir_all(paths.version_dir(&ga)).unwrap();
+    fs::create_dir_all(paths.version_dir(&alpha)).unwrap();
+    fs::create_dir_all(paths.version_dir(&beta)).unwrap();
+    fs::create_dir_all(paths.version_dir(&rc)).unwrap();
+
+    let latest = paths.latest_alpha_version().unwrap();
+    assert_eq!(latest, Some(alpha));
+}
+
+#[test]
 fn latest_ga_version_empty() {
     let (_temp, paths) = setup_temp_paths();
     paths.ensure_dirs().unwrap();

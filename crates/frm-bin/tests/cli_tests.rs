@@ -2124,6 +2124,89 @@ fn cli_default_help_mentions_latest() {
 }
 
 #[test]
+fn cli_releases_uninstall_help_mentions_latest() {
+    frm_cmd()
+        .args(["releases", "uninstall", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_alphas_uninstall_help_mentions_latest() {
+    frm_cmd()
+        .args(["alphas", "uninstall", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_alphas_reinstall_help_mentions_latest() {
+    frm_cmd()
+        .args(["alphas", "reinstall", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_releases_uninstall_latest_no_versions() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "uninstall", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no GA versions installed"));
+}
+
+#[test]
+fn cli_releases_uninstall_latest_selects_highest() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.0.0")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "uninstall", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("RabbitMQ 4.2.3 uninstalled"));
+
+    assert!(!versions_dir.join("4.2.3").exists());
+    assert!(versions_dir.join("4.0.0").exists());
+}
+
+#[test]
+fn cli_alphas_uninstall_latest_no_alphas() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "uninstall", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no alpha versions installed"));
+}
+
+#[test]
+fn cli_alphas_uninstall_latest_selects_highest() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.1")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.2")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "uninstall", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "RabbitMQ 4.3.0-alpha.2 uninstalled",
+        ));
+
+    assert!(!versions_dir.join("4.3.0-alpha.2").exists());
+    assert!(versions_dir.join("4.3.0-alpha.1").exists());
+}
+
+#[test]
 fn cli_use_latest_with_whitespace() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");

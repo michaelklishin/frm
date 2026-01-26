@@ -75,6 +75,9 @@ pub enum Error {
     #[error("no GA versions installed (use 'frm releases install' first)")]
     NoGAVersionsInstalled,
 
+    #[error("no alpha versions installed (use 'frm alphas install --latest' first)")]
+    NoAlphaVersionsInstalled,
+
     #[error("invalid date/time: {0}")]
     InvalidDateTime(String),
 
@@ -108,6 +111,7 @@ impl ExitCodeProvider for Error {
             Error::ExpectedNonAlphaVersion(_) => ExitCode::Usage,
             Error::NoAlphaReleasesFound => ExitCode::NoInput,
             Error::NoGAVersionsInstalled => ExitCode::NoInput,
+            Error::NoAlphaVersionsInstalled => ExitCode::NoInput,
             Error::InvalidDateTime(_) => ExitCode::Usage,
             Error::TanzuVersionMismatch { .. } => ExitCode::DataErr,
         }
