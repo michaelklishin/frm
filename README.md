@@ -39,8 +39,7 @@ Commands:
   cli          Run a RabbitMQ CLI tool
   fg           Run RabbitMQ nodes in foreground
   inspect      Inspect a RabbitMQ configuration file
-  env          Output shell initialization script
-  completions  Generate shell completions
+  shell        Shell-related operations
   help         Print this message or the help of the given subcommand(s)
 ```
 
@@ -56,13 +55,13 @@ Add to your shell profile:
 
 ```shell
 # bash: add to ~/.bashrc
-eval "$(frm env bash)"
+eval "$(frm shell env bash)"
 
 # zsh: add to ~/.zshrc
-eval "$(frm env zsh)"
+eval "$(frm shell env zsh)"
 
 # nushell: save to file and source in config.nu
-frm env nu | save -f ~/.local/frm/env.nu
+frm shell env nu | save -f ~/.local/frm/env.nu
 ```
 
 After setup, use `frm-use <version>` to switch versions.
@@ -171,19 +170,19 @@ frm tanzu install --local-tanzu-rabbitmq-tarball-path /path/to/tanzu-rabbitmq.ta
 ### Generate Shell Completions
 
 ```shell
-frm completions bash > ~/.local/share/bash-completion/completions/frm
+frm shell completions bash > ~/.local/share/bash-completion/completions/frm
 ```
 
 ```shell
-frm completions zsh > ~/.zfunc/_frm
+frm shell completions zsh > ~/.zfunc/_frm
 ```
 
 ```shell
-frm completions fish > ~/.config/fish/completions/frm.fish
+frm shell completions fish > ~/.config/fish/completions/frm.fish
 ```
 
 ```shell
-frm completions nushell | save -f ~/.cache/frm/completions.nu
+frm shell completions nushell | save -f ~/.cache/frm/completions.nu
 ```
 
 
