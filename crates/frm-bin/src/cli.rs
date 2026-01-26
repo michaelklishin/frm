@@ -374,13 +374,14 @@ fn use_command() -> Command {
         .about("Output shell commands to use a specific version")
         .long_about(
             "Output shell commands to use a specific version.\n\n\
+            Use 'latest' to select the most recent installed GA version.\n\n\
             If no version is specified, tries to use the local .tool-versions file.\n\n\
             bash/zsh: eval \"$(frm use [version])\"\n\
             nushell:  Use 'frm env nu' init script, then call 'frm-use [version]'",
         )
         .arg(
             Arg::new("version")
-                .help("Version to use (e.g., 4.2.3), or uses .tool-versions")
+                .help("Version to use (e.g., 4.2.3 or 'latest'), or uses .tool-versions")
                 .index(1),
         )
         .arg(
@@ -395,9 +396,13 @@ fn use_command() -> Command {
 fn default_command() -> Command {
     Command::new("default")
         .about("Set the default RabbitMQ version")
+        .long_about(
+            "Set the default RabbitMQ version.\n\n\
+            Use 'latest' to select the most recent installed GA version.",
+        )
         .arg(
             Arg::new("version")
-                .help("Version to set as default (e.g., 4.2.3)")
+                .help("Version to set as default (e.g., 4.2.3 or 'latest')")
                 .required(true)
                 .index(1),
         )

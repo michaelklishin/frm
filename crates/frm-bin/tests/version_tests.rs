@@ -388,3 +388,27 @@ fn parse_prerelease_case_insensitive() {
     assert_eq!(v1, v2);
     assert_eq!(v2, v3);
 }
+
+#[test]
+fn release_is_ga() {
+    let v = Version::new(4, 2, 3);
+    assert!(v.is_ga());
+}
+
+#[test]
+fn alpha_is_not_ga() {
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Alpha("1".into()));
+    assert!(!v.is_ga());
+}
+
+#[test]
+fn beta_is_not_ga() {
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Beta("1".into()));
+    assert!(!v.is_ga());
+}
+
+#[test]
+fn rc_is_not_ga() {
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::Rc("1".into()));
+    assert!(!v.is_ga());
+}

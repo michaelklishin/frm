@@ -137,4 +137,28 @@ proptest! {
         let release = Version::new(major, minor, patch);
         prop_assert!(prerelease < release);
     }
+
+    #[test]
+    fn release_is_ga(major in 0u32..100, minor in 0u32..100, patch in 0u32..100) {
+        let v = Version::new(major, minor, patch);
+        prop_assert!(v.is_ga());
+    }
+
+    #[test]
+    fn alpha_is_not_ga(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
+        let v = Version::with_prerelease(major, minor, patch, Prerelease::Alpha(pre_num.to_string()));
+        prop_assert!(!v.is_ga());
+    }
+
+    #[test]
+    fn beta_is_not_ga(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
+        let v = Version::with_prerelease(major, minor, patch, Prerelease::Beta(pre_num.to_string()));
+        prop_assert!(!v.is_ga());
+    }
+
+    #[test]
+    fn rc_is_not_ga(major in 1u32..10, minor in 0u32..20, patch in 0u32..20, pre_num in 1u32..10) {
+        let v = Version::with_prerelease(major, minor, patch, Prerelease::Rc(pre_num.to_string()));
+        prop_assert!(!v.is_ga());
+    }
 }

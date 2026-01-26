@@ -216,3 +216,90 @@ fn paths_installed_versions_with_alphas() {
     assert!(versions.contains(&alpha));
     assert!(versions.contains(&release));
 }
+
+#[test]
+fn latest_ga_version_empty() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert!(latest.is_none());
+}
+
+#[test]
+fn latest_ga_version_only_alphas() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let alpha1 = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("1".into()));
+    let alpha2 = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("2".into()));
+
+    fs::create_dir_all(paths.version_dir(&alpha1)).unwrap();
+    fs::create_dir_all(paths.version_dir(&alpha2)).unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert!(latest.is_none());
+}
+
+#[test]
+fn latest_ga_version_single_release() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let release = Version::new(4, 2, 3);
+    fs::create_dir_all(paths.version_dir(&release)).unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert_eq!(latest, Some(release));
+}
+
+#[test]
+fn latest_ga_version_multiple_releases() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let v1 = Version::new(4, 0, 0);
+    let v2 = Version::new(4, 1, 8);
+    let v3 = Version::new(4, 2, 3);
+
+    fs::create_dir_all(paths.version_dir(&v1)).unwrap();
+    fs::create_dir_all(paths.version_dir(&v2)).unwrap();
+    fs::create_dir_all(paths.version_dir(&v3)).unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert_eq!(latest, Some(v3));
+}
+
+#[test]
+fn latest_ga_version_mixed_releases_and_prereleases() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let v1 = Version::new(4, 2, 3);
+    let alpha = Version::with_prerelease(4, 3, 0, Prerelease::Alpha("1".into()));
+    let beta = Version::with_prerelease(4, 3, 0, Prerelease::Beta("1".into()));
+    let rc = Version::with_prerelease(4, 3, 0, Prerelease::Rc("1".into()));
+
+    fs::create_dir_all(paths.version_dir(&v1)).unwrap();
+    fs::create_dir_all(paths.version_dir(&alpha)).unwrap();
+    fs::create_dir_all(paths.version_dir(&beta)).unwrap();
+    fs::create_dir_all(paths.version_dir(&rc)).unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert_eq!(latest, Some(v1));
+}
+
+#[test]
+fn latest_ga_version_prerelease_higher_than_ga() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let ga = Version::new(4, 2, 3);
+    let rc = Version::with_prerelease(4, 3, 0, Prerelease::Rc("1".into()));
+
+    fs::create_dir_all(paths.version_dir(&ga)).unwrap();
+    fs::create_dir_all(paths.version_dir(&rc)).unwrap();
+
+    let latest = paths.latest_ga_version().unwrap();
+    assert_eq!(latest, Some(ga));
+}

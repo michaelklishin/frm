@@ -1938,3 +1938,213 @@ fn cli_conf_get_key_pattern_no_match() {
         .failure()
         .stderr(predicate::str::contains("no keys matching pattern"));
 }
+
+#[test]
+fn cli_use_latest_no_versions() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["use", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no GA versions installed"));
+}
+
+#[test]
+fn cli_use_latest_only_alphas() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no GA versions installed"));
+}
+
+#[test]
+fn cli_use_latest_selects_highest_ga() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.0.0").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.1.0").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_use_latest_ignores_prereleases() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.1").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-beta.1").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-rc.1").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_use_latest_case_insensitive() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "LATEST", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "Latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_default_latest_no_versions() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["default", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no GA versions installed"));
+}
+
+#[test]
+fn cli_default_latest_only_alphas() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no GA versions installed"));
+}
+
+#[test]
+fn cli_default_latest_selects_highest_ga() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.0.0")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.1.0")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+}
+
+#[test]
+fn cli_default_latest_ignores_prereleases() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.1")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-beta.1")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-rc.1")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+}
+
+#[test]
+fn cli_default_latest_case_insensitive() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "LATEST"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "Latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+}
+
+#[test]
+fn cli_default_latest_updates_config_and_file() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "latest"])
+        .assert()
+        .success();
+
+    let config_content = fs::read_to_string(temp.path().join("config.toml")).unwrap();
+    assert!(config_content.contains("major = 4"));
+    assert!(config_content.contains("minor = 2"));
+    assert!(config_content.contains("patch = 3"));
+
+    let default_content = fs::read_to_string(temp.path().join("default")).unwrap();
+    assert_eq!(default_content.trim(), "4.2.3");
+}
+
+#[test]
+fn cli_use_help_mentions_latest() {
+    frm_cmd()
+        .args(["use", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_default_help_mentions_latest() {
+    frm_cmd()
+        .args(["default", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_use_latest_with_whitespace() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["use", "  latest  ", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_default_latest_with_whitespace() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["default", "  latest  "])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+}

@@ -100,6 +100,10 @@ impl Version {
         self.prerelease.as_ref().is_some_and(|p| p.is_alpha())
     }
 
+    pub fn is_ga(&self) -> bool {
+        self.prerelease.is_none()
+    }
+
     pub fn download_url(&self) -> String {
         format!(
             "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{v}/rabbitmq-server-generic-unix-{v}.tar.xz",

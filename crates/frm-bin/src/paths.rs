@@ -118,6 +118,11 @@ impl Paths {
         versions.sort();
         Ok(versions)
     }
+
+    pub fn latest_ga_version(&self) -> Result<Option<Version>> {
+        let versions = self.installed_versions()?;
+        Ok(versions.into_iter().rev().find(|v| v.is_ga()))
+    }
 }
 
 impl Default for Paths {

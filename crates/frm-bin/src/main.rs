@@ -21,8 +21,14 @@ use frm::shell::Shell;
 use frm::version::Version;
 use frm::version_file;
 
-fn resolve_version(version_arg: Option<&String>) -> Result<Version, Error> {
+fn resolve_version(paths: &Paths, version_arg: Option<&String>) -> Result<Version, Error> {
     if let Some(v) = version_arg {
+        let v = v.trim();
+        if v.eq_ignore_ascii_case("latest") {
+            return paths
+                .latest_ga_version()?
+                .ok_or(Error::NoGAVersionsInstalled);
+        }
         return v.parse();
     }
 
@@ -49,7 +55,7 @@ async fn main() {
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::path_release(&paths, &version),
                     Err(e) => Err(e),
                 }
@@ -58,7 +64,7 @@ async fn main() {
                 let version_arg = install_sub.get_one::<String>("version");
                 let force = install_sub.get_flag("force");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::install_release(&paths, &version, force).await,
                     Err(e) => Err(e),
                 }
@@ -66,7 +72,7 @@ async fn main() {
             Some(("reinstall", reinstall_sub)) => {
                 let version_arg = reinstall_sub.get_one::<String>("version");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::reinstall_release(&paths, &version).await,
                     Err(e) => Err(e),
                 }
@@ -83,7 +89,7 @@ async fn main() {
                 Some(("path", path_sub)) => {
                     let version_arg = path_sub.get_one::<String>("version");
 
-                    match resolve_version(version_arg) {
+                    match resolve_version(&paths, version_arg) {
                         Ok(version) => commands::logs_path_release(&paths, &version),
                         Err(e) => Err(e),
                     }
@@ -92,7 +98,7 @@ async fn main() {
                     let version_arg = tail_sub.get_one::<String>("version");
                     let lines = *tail_sub.get_one::<usize>("lines").unwrap();
 
-                    match resolve_version(version_arg) {
+                    match resolve_version(&paths, version_arg) {
                         Ok(version) => commands::logs_tail_release(&paths, &version, lines),
                         Err(e) => Err(e),
                     }
@@ -107,7 +113,7 @@ async fn main() {
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::path_alpha(&paths, &version),
                     Err(e) => Err(e),
                 }
@@ -164,7 +170,7 @@ async fn main() {
                 Some(("path", path_sub)) => {
                     let version_arg = path_sub.get_one::<String>("version");
 
-                    match resolve_version(version_arg) {
+                    match resolve_version(&paths, version_arg) {
                         Ok(version) => commands::logs_path_alpha(&paths, &version),
                         Err(e) => Err(e),
                     }
@@ -173,7 +179,7 @@ async fn main() {
                     let version_arg = tail_sub.get_one::<String>("version");
                     let lines = *tail_sub.get_one::<usize>("lines").unwrap();
 
-                    match resolve_version(version_arg) {
+                    match resolve_version(&paths, version_arg) {
                         Ok(version) => commands::logs_tail_alpha(&paths, &version, lines),
                         Err(e) => Err(e),
                     }
@@ -205,7 +211,7 @@ async fn main() {
                 let key = get_sub.get_one::<String>("key").unwrap();
                 let version_arg = get_sub.get_one::<String>("version");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::conf_get_key(&paths, &version, key),
                     Err(e) => Err(e),
                 }
@@ -216,7 +222,7 @@ async fn main() {
                 let version_arg = set_sub.get_one::<String>("version");
                 let force = set_sub.get_flag("force");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::conf_set_key(&paths, &version, key, value, force),
                     Err(e) => Err(e),
                 }
@@ -228,16 +234,16 @@ async fn main() {
             let version_arg = sub.get_one::<String>("version");
             let shell = sub.get_one::<Shell>("shell").copied();
 
-            match resolve_version(version_arg) {
+            match resolve_version(&paths, version_arg) {
                 Ok(version) => commands::use_version(&paths, &version, shell),
                 Err(e) => Err(e),
             }
         }
 
         Some(("default", sub)) => {
-            let version_str = sub.get_one::<String>("version").unwrap();
+            let version_arg = sub.get_one::<String>("version");
 
-            match version_str.parse::<Version>() {
+            match resolve_version(&paths, version_arg) {
                 Ok(version) => commands::default(&paths, &version),
                 Err(e) => Err(e),
             }
@@ -251,7 +257,7 @@ async fn main() {
                 .map(|v| v.cloned().collect())
                 .unwrap_or_default();
 
-            match resolve_version(version_arg) {
+            match resolve_version(&paths, version_arg) {
                 Ok(version) => commands::cli(&paths, &version, tool, &args),
                 Err(e) => Err(e),
             }
@@ -261,7 +267,7 @@ async fn main() {
             Some(("node", fg_sub)) => {
                 let version_arg = fg_sub.get_one::<String>("version");
 
-                match resolve_version(version_arg) {
+                match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::fg_node(&paths, &version),
                     Err(e) => Err(e),
                 }
@@ -273,7 +279,7 @@ async fn main() {
             let file = sub.get_one::<String>("file").unwrap();
             let version_arg = sub.get_one::<String>("version");
 
-            match resolve_version(version_arg) {
+            match resolve_version(&paths, version_arg) {
                 Ok(version) => commands::inspect(&paths, &version, file),
                 Err(e) => Err(e),
             }
