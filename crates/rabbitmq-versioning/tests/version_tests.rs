@@ -8,7 +8,8 @@
 
 use std::collections::HashSet;
 
-use rabbitmq_versioning::{Prerelease, Version};
+use rabbitmq_versioning::{Error, Prerelease, Version};
+use serde_json;
 
 #[test]
 fn parse_valid_version() {
@@ -540,4 +541,57 @@ fn prerelease_string_identifier_ordering() {
     let alpha_b = Prerelease::alpha("def");
 
     assert!(alpha_a < alpha_b);
+}
+
+#[test]
+fn version_serde_roundtrip_ga() {
+    let v = Version::new(4, 2, 3);
+    let json = serde_json::to_string(&v).unwrap();
+    let parsed: Version = serde_json::from_str(&json).unwrap();
+    assert_eq!(v, parsed);
+}
+
+#[test]
+fn version_serde_roundtrip_prerelease() {
+    let v = Version::with_prerelease(4, 2, 4, Prerelease::alpha("1"));
+    let json = serde_json::to_string(&v).unwrap();
+    let parsed: Version = serde_json::from_str(&json).unwrap();
+    assert_eq!(v, parsed);
+}
+
+#[test]
+fn version_serde_skips_none_prerelease() {
+    let v = Version::new(4, 2, 3);
+    let json = serde_json::to_string(&v).unwrap();
+    assert!(!json.contains("prerelease"));
+}
+
+#[test]
+fn prerelease_serde_roundtrip() {
+    let alpha = Prerelease::alpha("1");
+    let json = serde_json::to_string(&alpha).unwrap();
+    let parsed: Prerelease = serde_json::from_str(&json).unwrap();
+    assert_eq!(alpha, parsed);
+}
+
+#[test]
+fn error_invalid_version_display() {
+    let err = Error::InvalidVersion("bad".into());
+    assert!(err.to_string().contains("bad"));
+}
+
+#[test]
+fn error_invalid_prerelease_display() {
+    let err = Error::InvalidPrerelease("bad".into());
+    assert!(err.to_string().contains("bad"));
+}
+
+#[test]
+fn error_equality() {
+    let e1 = Error::InvalidVersion("x".into());
+    let e2 = Error::InvalidVersion("x".into());
+    let e3 = Error::InvalidVersion("y".into());
+
+    assert_eq!(e1, e2);
+    assert_ne!(e1, e3);
 }

@@ -6,6 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::collections::HashSet;
+
 use proptest::prelude::*;
 
 use rabbitmq_versioning::{Prerelease, Version};
@@ -205,8 +207,6 @@ proptest! {
 
     #[test]
     fn version_hash_equal_versions(major in 0u32..100, minor in 0u32..100, patch in 0u32..100) {
-        use std::collections::HashSet;
-
         let v1 = Version::new(major, minor, patch);
         let v2 = Version::new(major, minor, patch);
 
