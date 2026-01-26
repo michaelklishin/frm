@@ -67,7 +67,10 @@ async fn main() {
     let result = match matches.subcommand() {
         Some(("releases", sub)) => match sub.subcommand() {
             Some(("list", _)) => commands::list_releases(&paths),
-            Some(("completions", _)) => commands::completions_releases(&paths),
+            Some(("completions", completions_sub)) => {
+                let shell = completions_sub.get_one::<Shell>("shell").copied();
+                commands::completions_releases(&paths, shell)
+            }
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 
@@ -126,7 +129,10 @@ async fn main() {
 
         Some(("alphas", sub)) => match sub.subcommand() {
             Some(("list", _)) => commands::list_alphas(&paths),
-            Some(("completions", _)) => commands::completions_alphas(&paths),
+            Some(("completions", completions_sub)) => {
+                let shell = completions_sub.get_one::<Shell>("shell").copied();
+                commands::completions_alphas(&paths, shell)
+            }
             Some(("path", path_sub)) => {
                 let version_arg = path_sub.get_one::<String>("version");
 

@@ -11,6 +11,7 @@ use bel7_cli::{print_info, print_warning};
 use crate::Result;
 use crate::config::Config;
 use crate::paths::Paths;
+use crate::shell::Shell;
 use crate::version::Version;
 
 pub fn run_releases(paths: &Paths) -> Result<()> {
@@ -61,7 +62,7 @@ fn print_versions(paths: &Paths, versions: &[Version]) -> Result<()> {
     Ok(())
 }
 
-pub fn completions_releases(paths: &Paths) -> Result<()> {
+pub fn completions_releases(paths: &Paths, _shell: Option<Shell>) -> Result<()> {
     let versions = paths.installed_versions()?;
     let releases: Vec<_> = versions
         .into_iter()
@@ -76,7 +77,7 @@ pub fn completions_releases(paths: &Paths) -> Result<()> {
     Ok(())
 }
 
-pub fn completions_alphas(paths: &Paths) -> Result<()> {
+pub fn completions_alphas(paths: &Paths, _shell: Option<Shell>) -> Result<()> {
     let versions = paths.installed_versions()?;
     let alphas: Vec<_> = versions
         .into_iter()

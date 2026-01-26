@@ -148,6 +148,48 @@ fn cli_releases_completions_excludes_alphas() {
 }
 
 #[test]
+fn cli_releases_completions_with_shell_bash() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "completions", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_releases_completions_with_shell_zsh() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "completions", "--shell", "zsh"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_releases_completions_with_shell_nu() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "completions", "--shell", "nu"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
 fn cli_releases_install_already_exists() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
@@ -1291,6 +1333,48 @@ fn cli_alphas_completions_excludes_releases() {
         .success()
         .stdout(predicate::str::contains("4.3.0-alpha.132057c7"))
         .stdout(predicate::str::contains("4.2.3").not());
+}
+
+#[test]
+fn cli_alphas_completions_with_shell_bash() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "completions", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_alphas_completions_with_shell_zsh() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "completions", "--shell", "zsh"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_alphas_completions_with_shell_nu() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "completions", "--shell", "nu"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"))
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
 }
 
 #[test]

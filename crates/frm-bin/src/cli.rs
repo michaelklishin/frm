@@ -59,6 +59,13 @@ fn releases_completions_command() -> Command {
     Command::new("completions")
         .about("Output installed release versions for shell completion")
         .hide(true)
+        .arg(
+            Arg::new("shell")
+                .long("shell")
+                .short('s')
+                .help("Shell type (bash, zsh, nu)")
+                .value_parser(clap::value_parser!(Shell)),
+        )
 }
 
 fn releases_list_command() -> Command {
@@ -174,6 +181,13 @@ fn alphas_completions_command() -> Command {
     Command::new("completions")
         .about("Output installed alpha versions for shell completion")
         .hide(true)
+        .arg(
+            Arg::new("shell")
+                .long("shell")
+                .short('s')
+                .help("Shell type (bash, zsh, nu)")
+                .value_parser(clap::value_parser!(Shell)),
+        )
 }
 
 fn alphas_list_command() -> Command {
