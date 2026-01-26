@@ -2,7 +2,9 @@
 
 ## v0.11.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Extracted `rabbitmq-versioning` crate for RabbitMQ version parsing, comparison, and URL generation
 
 
 ## v0.10.0 (Jan 25, 2026)
