@@ -6,13 +6,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Key validation for RabbitMQ configuration files
+//! This module implements key validation for RabbitMQ configuration files.
 //!
-//! This module provides validation of configuration keys against known
-//! patterns from the RabbitMQ cuttlefish schema.
+//! The validation module uses known keys and patterns
+//! from the RabbitMQ Cuttlefish schema files (`priv/*.schema`).
 
-/// Key patterns from the RabbitMQ cuttlefish schema
-/// Patterns with `$name`, `$id`, etc. are represented with a `*` wildcard
+/// Key patterns from the RabbitMQ Cuttlefish schema files.
+/// Patterns with `$name`, `$id`, etc. are represented with a `*` wildcard.
 static KNOWN_KEY_PATTERNS: &[&str] = &[
     // Listeners
     "listeners.tcp",
