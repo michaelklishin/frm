@@ -6,22 +6,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use clap::{Arg, ArgAction, Command, ValueEnum};
+use clap::{Arg, ArgAction, Command};
+
+pub use bel7_cli::CompletionShell;
 
 use crate::commands::{CONFIG_FILES, RABBITMQ_TOOLS};
 use crate::shell::Shell;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
-pub enum CompletionShell {
-    Bash,
-    Elvish,
-    Fish,
-    #[value(name = "nushell", alias = "nu")]
-    Nushell,
-    #[value(name = "powershell")]
-    PowerShell,
-    Zsh,
-}
 
 pub fn build_cli() -> Command {
     Command::new("frm")
@@ -486,10 +476,14 @@ fn shell_env_command() -> Command {
 fn shell_completions_command() -> Command {
     Command::new("completions")
         .about("Generate shell completions")
+        .long_about(
+            "Generate shell completions.\n\n\
+            If no shell is specified, attempts to detect the current shell from \
+            environment variables (SHELL, NU_VERSION, etc.).",
+        )
         .arg(
             Arg::new("shell")
-                .help("Target shell (bash, elvish, fish, nushell, powershell, zsh)")
-                .required(true)
+                .help("Target shell (bash, elvish, fish, nushell, powershell, zsh); auto-detected if omitted")
                 .index(1)
                 .value_parser(clap::value_parser!(CompletionShell)),
         )

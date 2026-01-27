@@ -583,12 +583,8 @@ fn cli_shell_env_invalid_shell() {
 }
 
 #[test]
-fn cli_shell_completions_requires_shell() {
-    frm_cmd()
-        .args(["shell", "completions"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("<shell>"));
+fn cli_shell_completions_auto_detects_shell() {
+    frm_cmd().args(["shell", "completions"]).assert().success();
 }
 
 #[test]

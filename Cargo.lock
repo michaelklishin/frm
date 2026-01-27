@@ -133,15 +133,19 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bel7-cli"
-version = "0.6.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99945a17451b04246d3da8c0f9be3e521f61ca7b24f672bc0c56589ede397b1f"
+checksum = "e19d6f12ea66366df9a5973711b55e922bd4623316129c8e648c7f0a04dd26ca"
 dependencies = [
  "clap",
+ "clap_complete",
+ "clap_complete_nushell",
+ "indicatif",
  "owo-colors",
  "serde",
  "sysexits",
  "tabled",
+ "terminal_size",
 ]
 
 [[package]]
@@ -510,8 +514,6 @@ dependencies = [
  "chrono",
  "chrono-english",
  "clap",
- "clap_complete",
- "clap_complete_nushell",
  "dirs",
  "flate2",
  "futures-util",
@@ -1830,6 +1832,16 @@ dependencies = [
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "terminal_size"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60b8cb979cb11c32ce1603f8137b22262a9d131aaa5c37b5678025f22b8becd0"
+dependencies = [
+ "rustix",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

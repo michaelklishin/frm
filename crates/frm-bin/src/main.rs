@@ -314,8 +314,11 @@ async fn main() {
                 commands::env(&paths, *shell)
             }
             Some(("completions", completions_sub)) => {
-                let shell = completions_sub.get_one::<CompletionShell>("shell").unwrap();
-                commands::completions(*shell)
+                let shell = completions_sub
+                    .get_one::<CompletionShell>("shell")
+                    .copied()
+                    .unwrap_or_else(CompletionShell::detect);
+                commands::completions(shell)
             }
             _ => Ok(()),
         },
