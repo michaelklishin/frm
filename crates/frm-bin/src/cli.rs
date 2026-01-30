@@ -16,8 +16,10 @@ use crate::shell::Shell;
 pub fn build_cli() -> Command {
     Command::new("frm")
         .version(env!("CARGO_PKG_VERSION"))
+        .disable_version_flag(true)
         .author("Michael S. Klishin")
         .about("Frakking RabbitMQ version Manager")
+        .help_template("{name} {version}\n{about}\n\n{usage-heading} {usage}\n\n{all-args}")
         .arg_required_else_help(true)
         .subcommand(releases_command())
         .subcommand(alphas_command())

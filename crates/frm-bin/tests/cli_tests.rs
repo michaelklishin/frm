@@ -38,18 +38,10 @@ fn cli_help_flag() {
         .arg("--help")
         .assert()
         .success()
+        .stdout(predicate::str::contains("frm "))
         .stdout(predicate::str::contains(
             "Frakking RabbitMQ version Manager",
         ));
-}
-
-#[test]
-fn cli_version_flag() {
-    frm_cmd()
-        .arg("--version")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("frm"));
 }
 
 #[test]
