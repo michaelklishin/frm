@@ -9,8 +9,6 @@
 //! End-to-end integration tests that download real packages.
 //! These tests require network access and may take longer to run.
 
-use std::fs;
-
 use assert_cmd::Command;
 use predicates::prelude::*;
 use tempfile::TempDir;
@@ -440,42 +438,6 @@ fn end_to_end_alphas_path() {
 }
 
 // ============================================================================
-// .tool-versions support
-// ============================================================================
-
-#[test]
-fn end_to_end_tool_versions_file() {
-    let temp = TempDir::new().unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .args(["releases", "install", TEST_GA_VERSION])
-        .assert()
-        .success();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(
-        work_dir.join(".tool-versions"),
-        format!("rabbitmq {}\n", TEST_GA_VERSION),
-    )
-    .unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["use", "--shell", "bash"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains(TEST_GA_VERSION));
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["releases", "path"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains(TEST_GA_VERSION));
-}
-
-// ============================================================================
 // Full workflow test
 // ============================================================================
 
@@ -855,77 +817,6 @@ fn end_to_end_scenario_mixed_releases_and_alphas() {
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
-}
-
-#[test]
-fn end_to_end_scenario_project_workflow_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .args(["releases", "install", TEST_GA_VERSION_2])
-        .assert()
-        .success();
-
-    frm_cmd_with_dir(&temp)
-        .args(["releases", "install", TEST_GA_VERSION])
-        .assert()
-        .success();
-
-    let project_a = temp.path().join("project_a");
-    fs::create_dir_all(&project_a).unwrap();
-    fs::write(
-        project_a.join(".tool-versions"),
-        format!("rabbitmq {}\n", TEST_GA_VERSION_2),
-    )
-    .unwrap();
-
-    let project_b = temp.path().join("project_b");
-    fs::create_dir_all(&project_b).unwrap();
-    fs::write(
-        project_b.join(".tool-versions"),
-        format!("rabbitmq {}\n", TEST_GA_VERSION),
-    )
-    .unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_a)
-        .args(["use", "--shell", "bash"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains(TEST_GA_VERSION_2));
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_b)
-        .args(["use", "--shell", "bash"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains(TEST_GA_VERSION));
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_a)
-        .args(["conf", "set-key", "cluster_name", "project_a"])
-        .assert()
-        .success();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_b)
-        .args(["conf", "set-key", "cluster_name", "project_b"])
-        .assert()
-        .success();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_a)
-        .args(["conf", "get-key", "cluster_name"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("project_a"));
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&project_b)
-        .args(["conf", "get-key", "cluster_name"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("project_b"));
 }
 
 #[test]

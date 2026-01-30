@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
@@ -18,7 +18,6 @@ use frm::paths::Paths;
 use frm::releases::{find_latest_alpha, find_latest_ga_release};
 use frm::shell::Shell;
 use frm::version::Version;
-use frm::version_file;
 
 fn resolve_version(paths: &Paths, version_arg: Option<&String>) -> Result<Version, Error> {
     if let Some(v) = version_arg {
@@ -31,9 +30,7 @@ fn resolve_version(paths: &Paths, version_arg: Option<&String>) -> Result<Versio
         return v.parse().map_err(Into::into);
     }
 
-    version_file::find_version().ok_or_else(|| {
-        Error::InvalidVersion("no version specified and no .tool-versions found".into())
-    })
+    Err(Error::InvalidVersion("no version specified".into()))
 }
 
 fn resolve_alpha_version(paths: &Paths, version_arg: Option<&String>) -> Result<Version, Error> {
@@ -47,9 +44,7 @@ fn resolve_alpha_version(paths: &Paths, version_arg: Option<&String>) -> Result<
         return v.parse().map_err(Into::into);
     }
 
-    version_file::find_version().ok_or_else(|| {
-        Error::InvalidVersion("no version specified and no .tool-versions found".into())
-    })
+    Err(Error::InvalidVersion("no version specified".into()))
 }
 
 #[tokio::main]
@@ -268,19 +263,6 @@ async fn main() {
                     Ok(version) => commands::conf_set_key(&paths, &version, key, value, force),
                     Err(e) => Err(e),
                 }
-            }
-            _ => Ok(()),
-        },
-
-        Some(("erlang", sub)) => match sub.subcommand() {
-            Some(("set-in-tool-versions", set_sub)) => {
-                let rabbitmq_version = set_sub.get_one::<String>("rabbitmq_version").unwrap();
-                let erlang_version = set_sub.get_one::<String>("erlang_version").unwrap();
-                let path = set_sub
-                    .get_one::<String>("path")
-                    .map(|s| Path::new(s.as_str()));
-
-                commands::erlang_set_in_tool_versions(rabbitmq_version, erlang_version, path)
             }
             _ => Ok(()),
         },

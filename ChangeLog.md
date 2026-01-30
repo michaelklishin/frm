@@ -4,7 +4,6 @@
 
 ### Enhancements
 
- * New command, `erlang set-in-tool-versions`, updates the [`tool-versions` file](https://asdf-vm.com/manage/configuration.html#tool-versions) with the specified Erlang version
  * `releases install latest` now fetches the latest GA release from GitHub when no versions are installed locally
  * `frm help` now displays the tool version
 

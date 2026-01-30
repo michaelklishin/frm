@@ -25,7 +25,6 @@ pub fn build_cli() -> Command {
         .subcommand(alphas_command())
         .subcommand(tanzu_command())
         .subcommand(conf_command())
-        .subcommand(erlang_command())
         .subcommand(use_command())
         .subcommand(default_command())
         .subcommand(cli_command())
@@ -69,10 +68,6 @@ fn releases_list_command() -> Command {
 fn releases_path_command() -> Command {
     Command::new("path")
         .about("Show the local path of an installed release")
-        .long_about(
-            "Show the local path of an installed release.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
-        )
         .arg(version_arg())
 }
 
@@ -106,7 +101,6 @@ fn releases_install_command() -> Command {
         .about("Install a stable RabbitMQ release")
         .long_about(
             "Install a stable RabbitMQ release (beta, rc, or GA).\n\n\
-            If no version is specified, tries to use the local .tool-versions file.\n\n\
             Alpha versions are not allowed; use 'frm alphas install' instead.",
         )
         .arg(
@@ -128,8 +122,7 @@ fn releases_reinstall_command() -> Command {
         .about("Reinstall a stable RabbitMQ release")
         .long_about(
             "Reinstall a stable RabbitMQ release.\n\n\
-            Removes the existing installation and downloads a fresh copy.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            Removes the existing installation and downloads a fresh copy.",
         )
         .arg(
             Arg::new("version")
@@ -144,8 +137,7 @@ fn releases_uninstall_command() -> Command {
         .about("Uninstall a stable RabbitMQ release")
         .long_about(
             "Uninstall a stable RabbitMQ release.\n\n\
-            Use 'latest' to uninstall the most recent installed GA version.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            Use 'latest' to uninstall the most recent installed GA version.",
         )
         .arg(
             Arg::new("version")
@@ -191,10 +183,6 @@ fn alphas_list_command() -> Command {
 fn alphas_path_command() -> Command {
     Command::new("path")
         .about("Show the local path of an installed alpha release")
-        .long_about(
-            "Show the local path of an installed alpha release.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
-        )
         .arg(version_arg())
 }
 
@@ -258,8 +246,7 @@ fn alphas_reinstall_command() -> Command {
         .long_about(
             "Reinstall an alpha RabbitMQ release.\n\n\
             Removes the existing installation and downloads a fresh copy.\n\n\
-            Use 'latest' to reinstall the most recent installed alpha version.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            Use 'latest' to reinstall the most recent installed alpha version.",
         )
         .arg(
             Arg::new("version")
@@ -274,8 +261,7 @@ fn alphas_uninstall_command() -> Command {
         .about("Uninstall an alpha RabbitMQ release")
         .long_about(
             "Uninstall an alpha RabbitMQ release.\n\n\
-            Use 'latest' to uninstall the most recent installed alpha version.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            Use 'latest' to uninstall the most recent installed alpha version.",
         )
         .arg(
             Arg::new("version")
@@ -359,44 +345,6 @@ fn conf_command() -> Command {
         .subcommand(conf_set_key_command())
 }
 
-fn erlang_command() -> Command {
-    Command::new("erlang")
-        .about("Manage Erlang/OTP version for RabbitMQ")
-        .arg_required_else_help(true)
-        .subcommand(erlang_set_in_tool_versions_command())
-}
-
-fn erlang_set_in_tool_versions_command() -> Command {
-    Command::new("set-in-tool-versions")
-        .about("Set erlang version in .tool-versions")
-        .long_about(
-            "Set erlang version in .tool-versions file.\n\n\
-            Creates the file if it doesn't exist, or updates it if it does.\n\
-            Also sets the rabbitmq version in the same file.",
-        )
-        .arg(
-            Arg::new("rabbitmq_version")
-                .long("rabbitmq-version")
-                .help("RabbitMQ version to set")
-                .required(true)
-                .value_name("VERSION"),
-        )
-        .arg(
-            Arg::new("erlang_version")
-                .long("erlang-version")
-                .help("Erlang/OTP version to set")
-                .required(true)
-                .value_name("VERSION"),
-        )
-        .arg(
-            Arg::new("path")
-                .long("path")
-                .short('p')
-                .help("Directory containing .tool-versions (defaults to current directory)")
-                .value_name("PATH"),
-        )
-}
-
 fn conf_get_key_command() -> Command {
     Command::new("get-key")
         .about("Get a configuration key value from rabbitmq.conf")
@@ -404,8 +352,7 @@ fn conf_get_key_command() -> Command {
             "Get a configuration key value from rabbitmq.conf.\n\n\
             Supports pattern matching with * as a wildcard for a single segment:\n\n \
             * `listeners.tcp.*` matches `listeners.tcp.default`, `listeners.tcp.amqp`, etc.\n \
-            * `log.*.level` matches `log.console.level`, `log.file.level`, etc.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            * `log.*.level` matches `log.console.level`, `log.file.level`, etc.",
         )
         .arg(
             Arg::new("key")
@@ -421,7 +368,6 @@ fn conf_set_key_command() -> Command {
         .about("Set a configuration key value in rabbitmq.conf")
         .long_about(
             "Set a configuration key value in rabbitmq.conf.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.\n\n\
             Keys are validated against the known RabbitMQ configuration schema.\n\
             Use --force to set unknown keys.",
         )
@@ -453,13 +399,12 @@ fn use_command() -> Command {
         .long_about(
             "Output shell commands to use a specific version.\n\n\
             Use 'latest' to select the most recent installed GA version.\n\n\
-            If no version is specified, tries to use the local .tool-versions file.\n\n\
             bash/zsh: eval \"$(frm use [version])\"\n\
             nushell:  Use 'frm env nu' init script, then call 'frm-use [version]'",
         )
         .arg(
             Arg::new("version")
-                .help("Version to use (e.g., 4.2.3 or 'latest'), or uses .tool-versions")
+                .help("Version to use (e.g., 4.2.3 or 'latest')")
                 .index(1),
         )
         .arg(
@@ -536,7 +481,6 @@ fn cli_command() -> Command {
         .long_about(format!(
             "Run a RabbitMQ CLI tool from the specified version.\n\n\
             Available tools: {}\n\n\
-            If no version is specified, tries to use the local .tool-versions file.\n\n\
             Use -- to separate tool arguments from frm options:\n\
             frm cli rabbitmqctl -V 4.2.3 -- status",
             RABBITMQ_TOOLS.join(", ")
@@ -559,10 +503,6 @@ fn fg_command() -> Command {
         .subcommand(
             Command::new("node")
                 .about("Start RabbitMQ server in foreground")
-                .long_about(
-                    "Start RabbitMQ server in foreground.\n\n\
-                    If no version is specified, tries to use the local .tool-versions file.",
-                )
                 .arg(version_arg()),
         )
 }
@@ -572,8 +512,7 @@ fn inspect_command() -> Command {
         .about("Inspect a RabbitMQ configuration file")
         .long_about(format!(
             "Inspect a RabbitMQ configuration file from the specified version.\n\n\
-            Available files: {}\n\n\
-            If no version is specified, tries to use the local .tool-versions file.",
+            Available files: {}",
             CONFIG_FILES.join(", ")
         ))
         .arg(
@@ -589,6 +528,6 @@ fn version_arg() -> Arg {
     Arg::new("version")
         .long("version")
         .short('V')
-        .help("RabbitMQ version to use, or uses .tool-versions")
+        .help("RabbitMQ version to use")
         .value_name("VERSION")
 }

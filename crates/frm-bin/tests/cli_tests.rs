@@ -391,7 +391,7 @@ fn cli_releases_reinstall_not_installed() {
 }
 
 #[test]
-fn cli_releases_reinstall_no_version_no_tool_versions() {
+fn cli_releases_reinstall_no_version() {
     let temp = TempDir::new().unwrap();
     let work_dir = temp.path().join("empty");
     fs::create_dir_all(&work_dir).unwrap();
@@ -402,21 +402,6 @@ fn cli_releases_reinstall_no_version_no_tool_versions() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("no version specified"));
-}
-
-#[test]
-fn cli_releases_reinstall_with_tool_versions_not_installed() {
-    let temp = TempDir::new().unwrap();
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["releases", "reinstall"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
@@ -600,7 +585,7 @@ fn cli_invalid_version_format() {
 }
 
 #[test]
-fn cli_no_version_no_tool_versions() {
+fn cli_inspect_no_version() {
     let temp = TempDir::new().unwrap();
     let work_dir = temp.path().join("empty");
     fs::create_dir_all(&work_dir).unwrap();
@@ -987,110 +972,6 @@ fn cli_fg_node_server_not_found() {
 
     frm_cmd_with_dir(&temp)
         .args(["fg", "node", "-V", "4.2.3"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("file not found"));
-}
-
-#[test]
-fn cli_inspect_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.1.0");
-    let etc_dir = version_dir.join("etc").join("rabbitmq");
-    fs::create_dir_all(&etc_dir).unwrap();
-    let config = r#"log.file.level = info
-vm_memory_high_watermark.relative = 0.6
-cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
-"#;
-    fs::write(etc_dir.join("rabbitmq.conf"), config).unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["inspect", "rabbitmq.conf"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("vm_memory_high_watermark"));
-}
-
-#[test]
-fn cli_releases_logs_path_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.1.0");
-    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
-    fs::create_dir_all(&log_dir).unwrap();
-    fs::write(log_dir.join("rabbit@myhost.log"), "").unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["releases", "logs", "path"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("rabbit@myhost.log"));
-}
-
-#[test]
-fn cli_releases_logs_tail_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.1.0");
-    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
-    fs::create_dir_all(&log_dir).unwrap();
-    fs::write(
-        log_dir.join("rabbit@myhost.log"),
-        "2026-01-16 19:29:14.752351-08:00 [info] <0.208.0> Server startup complete\n",
-    )
-    .unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["releases", "logs", "tail"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Server startup complete"));
-}
-
-#[test]
-fn cli_fg_node_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.1.0");
-    fs::create_dir_all(version_dir.join("sbin")).unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["fg", "node"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("file not found"));
-}
-
-#[test]
-fn cli_cli_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.1.0");
-    fs::create_dir_all(version_dir.join("sbin")).unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.1.0\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["cli", "rabbitmqctl"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("file not found"));
@@ -1643,59 +1524,7 @@ fn cli_alphas_logs_no_subcommand() {
 }
 
 #[test]
-fn cli_alphas_logs_path_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
-    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
-    fs::create_dir_all(&log_dir).unwrap();
-    fs::write(log_dir.join("rabbit@myhost.log"), "").unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(
-        work_dir.join(".tool-versions"),
-        "rabbitmq 4.3.0-alpha.abc123\n",
-    )
-    .unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["alphas", "logs", "path"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("rabbit@myhost.log"));
-}
-
-#[test]
-fn cli_alphas_logs_tail_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
-    let log_dir = version_dir.join("var").join("log").join("rabbitmq");
-    fs::create_dir_all(&log_dir).unwrap();
-    fs::write(
-        log_dir.join("rabbit@myhost.log"),
-        "2026-01-16 19:29:14.752351-08:00 [info] <0.208.0> Alpha server startup\n",
-    )
-    .unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(
-        work_dir.join(".tool-versions"),
-        "rabbitmq 4.3.0-alpha.abc123\n",
-    )
-    .unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["alphas", "logs", "tail"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Alpha server startup"));
-}
-
-#[test]
-fn cli_releases_path_no_version_no_tool_versions() {
+fn cli_releases_path_no_version() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
         .args(["releases", "path"])
@@ -1741,22 +1570,7 @@ fn cli_releases_path_rejects_alpha() {
 }
 
 #[test]
-fn cli_releases_path_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let versions_dir = temp.path().join("versions");
-    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
-    fs::write(temp.path().join(".tool-versions"), "rabbitmq 4.2.3\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(temp.path())
-        .args(["releases", "path"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("4.2.3"));
-}
-
-#[test]
-fn cli_alphas_path_no_version_no_tool_versions() {
+fn cli_alphas_path_no_version() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
         .args(["alphas", "path"])
@@ -1799,25 +1613,6 @@ fn cli_alphas_path_rejects_release() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("expected an alpha version"));
-}
-
-#[test]
-fn cli_alphas_path_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let versions_dir = temp.path().join("versions");
-    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
-    fs::write(
-        temp.path().join(".tool-versions"),
-        "rabbitmq 4.3.0-alpha.abc123\n",
-    )
-    .unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(temp.path())
-        .args(["alphas", "path"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
 }
 
 #[test]
@@ -2095,47 +1890,6 @@ fn cli_conf_set_key_invalid_format() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("invalid key format"));
-}
-
-#[test]
-fn cli_conf_get_key_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.2.3");
-    let etc_dir = version_dir.join("etc").join("rabbitmq");
-    fs::create_dir_all(&etc_dir).unwrap();
-    fs::write(etc_dir.join("rabbitmq.conf"), "heartbeat = 60\n").unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.2.3\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["conf", "get-key", "heartbeat"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("60"));
-}
-
-#[test]
-fn cli_conf_set_key_with_tool_versions() {
-    let temp = TempDir::new().unwrap();
-    let version_dir = temp.path().join("versions").join("4.2.3");
-    let etc_dir = version_dir.join("etc").join("rabbitmq");
-    fs::create_dir_all(&etc_dir).unwrap();
-
-    let work_dir = temp.path().join("project");
-    fs::create_dir_all(&work_dir).unwrap();
-    fs::write(work_dir.join(".tool-versions"), "rabbitmq 4.2.3\n").unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(&work_dir)
-        .args(["conf", "set-key", "heartbeat", "120"])
-        .assert()
-        .success();
-
-    let conf_content = fs::read_to_string(etc_dir.join("rabbitmq.conf")).unwrap();
-    assert!(conf_content.contains("heartbeat = 120"));
 }
 
 #[test]
@@ -2469,70 +2223,4 @@ fn cli_default_latest_with_whitespace() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Default version set to 4.2.3"));
-}
-
-#[test]
-fn cli_erlang_help() {
-    frm_cmd()
-        .args(["erlang", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Manage Erlang/OTP version"));
-}
-
-#[test]
-fn cli_erlang_set_in_tool_versions() {
-    let temp = TempDir::new().unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .current_dir(temp.path())
-        .args([
-            "erlang",
-            "set-in-tool-versions",
-            "--rabbitmq-version",
-            "4.2.3",
-            "--erlang-version",
-            "26.2.1",
-        ])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("erlang 26.2.1"));
-
-    let content = fs::read_to_string(temp.path().join(".tool-versions")).unwrap();
-    assert!(content.contains("erlang 26.2.1"));
-    assert!(content.contains("rabbitmq 4.2.3"));
-}
-
-#[test]
-fn cli_erlang_set_in_tool_versions_with_path() {
-    let temp = TempDir::new().unwrap();
-    let subdir = temp.path().join("project");
-    fs::create_dir(&subdir).unwrap();
-
-    frm_cmd_with_dir(&temp)
-        .args([
-            "erlang",
-            "set-in-tool-versions",
-            "--rabbitmq-version",
-            "4.2.3",
-            "--erlang-version",
-            "26.2.1",
-            "--path",
-            subdir.to_str().unwrap(),
-        ])
-        .assert()
-        .success();
-
-    let content = fs::read_to_string(subdir.join(".tool-versions")).unwrap();
-    assert!(content.contains("erlang 26.2.1"));
-    assert!(content.contains("rabbitmq 4.2.3"));
-}
-
-#[test]
-fn cli_erlang_set_in_tool_versions_requires_versions() {
-    frm_cmd()
-        .args(["erlang", "set-in-tool-versions"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("--rabbitmq-version"));
 }

@@ -20,7 +20,6 @@ pub mod releases;
 pub mod shell;
 pub mod tanzu;
 pub mod timestamps;
-pub mod version_file;
 
 pub use errors::Error;
 pub use rabbitmq_versioning as version;
