@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
@@ -15,7 +15,7 @@ use frm::cli::{CompletionShell, build_cli};
 use frm::commands;
 use frm::errors::Error;
 use frm::paths::Paths;
-use frm::releases::find_latest_alpha;
+use frm::releases::{find_latest_alpha, find_latest_ga_release};
 use frm::shell::Shell;
 use frm::version::Version;
 use frm::version_file;
@@ -83,8 +83,27 @@ async fn main() {
                 let version_arg = install_sub.get_one::<String>("version");
                 let force = install_sub.get_flag("force");
 
-                match resolve_version(&paths, version_arg) {
-                    Ok(version) => commands::install_release(&paths, &version, force).await,
+                let version_result = resolve_version(&paths, version_arg);
+                let version = match version_result {
+                    Ok(v) => Ok(v),
+                    Err(Error::NoGAVersionsInstalled)
+                        if version_arg.is_some_and(|v| v.trim().eq_ignore_ascii_case("latest")) =>
+                    {
+                        print_info("No local versions installed, fetching latest from GitHub...");
+                        let client = reqwest::Client::new();
+                        match find_latest_ga_release(&client).await {
+                            Ok(v) => {
+                                print_info(format!("Found latest GA release: {}", v));
+                                Ok(v)
+                            }
+                            Err(e) => Err(e),
+                        }
+                    }
+                    Err(e) => Err(e),
+                };
+
+                match version {
+                    Ok(v) => commands::install_release(&paths, &v, force).await,
                     Err(e) => Err(e),
                 }
             }
@@ -249,6 +268,19 @@ async fn main() {
                     Ok(version) => commands::conf_set_key(&paths, &version, key, value, force),
                     Err(e) => Err(e),
                 }
+            }
+            _ => Ok(()),
+        },
+
+        Some(("erlang", sub)) => match sub.subcommand() {
+            Some(("set-in-tool-versions", set_sub)) => {
+                let rabbitmq_version = set_sub.get_one::<String>("rabbitmq_version").unwrap();
+                let erlang_version = set_sub.get_one::<String>("erlang_version").unwrap();
+                let path = set_sub
+                    .get_one::<String>("path")
+                    .map(|s| Path::new(s.as_str()));
+
+                commands::erlang_set_in_tool_versions(rabbitmq_version, erlang_version, path)
             }
             _ => Ok(()),
         },

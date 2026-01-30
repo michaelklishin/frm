@@ -6,6 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::fs;
+
 use bel7_cli::{print_info, print_warning};
 use rabbitmq_conf::{RabbitMQConf, keys};
 
@@ -88,7 +90,7 @@ pub fn set_key(
 
     // Ensure the etc directory exists
     if !etc_dir.exists() {
-        std::fs::create_dir_all(&etc_dir)?;
+        fs::create_dir_all(&etc_dir)?;
     }
 
     // Load existing config or create new

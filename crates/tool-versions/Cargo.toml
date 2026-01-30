@@ -1,0 +1,29 @@
+[package]
+name = "tool-versions"
+version = "1.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository = "https://github.com/michaelklishin/frm/tree/main/crates/tool-versions"
+homepage = "https://github.com/michaelklishin/frm/tree/main/crates/tool-versions"
+description = "Parser and manipulation library for .tool-versions files"
+readme = "README.md"
+keywords = ["asdf", "tool-versions", "version-manager", "parser"]
+categories = ["config", "parsing"]
+
+[dependencies]
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[dev-dependencies]
+proptest = "1.6"
+tempfile = "3.19"
+serde_json = "1.0"
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[lints]
+workspace = true

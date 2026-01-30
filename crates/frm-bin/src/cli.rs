@@ -23,6 +23,7 @@ pub fn build_cli() -> Command {
         .subcommand(alphas_command())
         .subcommand(tanzu_command())
         .subcommand(conf_command())
+        .subcommand(erlang_command())
         .subcommand(use_command())
         .subcommand(default_command())
         .subcommand(cli_command())
@@ -354,6 +355,44 @@ fn conf_command() -> Command {
         .arg_required_else_help(true)
         .subcommand(conf_get_key_command())
         .subcommand(conf_set_key_command())
+}
+
+fn erlang_command() -> Command {
+    Command::new("erlang")
+        .about("Manage Erlang/OTP version for RabbitMQ")
+        .arg_required_else_help(true)
+        .subcommand(erlang_set_in_tool_versions_command())
+}
+
+fn erlang_set_in_tool_versions_command() -> Command {
+    Command::new("set-in-tool-versions")
+        .about("Set erlang version in .tool-versions")
+        .long_about(
+            "Set erlang version in .tool-versions file.\n\n\
+            Creates the file if it doesn't exist, or updates it if it does.\n\
+            Also sets the rabbitmq version in the same file.",
+        )
+        .arg(
+            Arg::new("rabbitmq_version")
+                .long("rabbitmq-version")
+                .help("RabbitMQ version to set")
+                .required(true)
+                .value_name("VERSION"),
+        )
+        .arg(
+            Arg::new("erlang_version")
+                .long("erlang-version")
+                .help("Erlang/OTP version to set")
+                .required(true)
+                .value_name("VERSION"),
+        )
+        .arg(
+            Arg::new("path")
+                .long("path")
+                .short('p')
+                .help("Directory containing .tool-versions (defaults to current directory)")
+                .value_name("PATH"),
+        )
 }
 
 fn conf_get_key_command() -> Command {

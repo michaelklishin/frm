@@ -15,6 +15,9 @@ use crate::version::Version;
 const SERVER_PACKAGES_API_URL: &str =
     "https://api.github.com/repos/rabbitmq/server-packages/releases";
 
+const RABBITMQ_SERVER_API_URL: &str =
+    "https://api.github.com/repos/rabbitmq/rabbitmq-server/releases";
+
 #[derive(Debug, Deserialize)]
 pub struct GitHubRelease {
     pub tag_name: String,
@@ -97,4 +100,30 @@ pub fn parse_version_from_release_name(name: &str) -> Option<Version> {
     } else {
         None
     }
+}
+
+pub async fn find_latest_ga_release(client: &reqwest::Client) -> Result<Version> {
+    let releases: Vec<GitHubRelease> = client
+        .get(RABBITMQ_SERVER_API_URL)
+        .query(&[("per_page", "50")])
+        .header("User-Agent", "frm")
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    for release in releases {
+        if let Some(version) = parse_version_from_tag(&release.tag_name)
+            && version.is_ga()
+        {
+            return Ok(version);
+        }
+    }
+
+    Err(Error::ReleaseNotFound("no GA releases found".to_string()))
+}
+
+pub fn parse_version_from_tag(tag: &str) -> Option<Version> {
+    let version_str = tag.strip_prefix('v')?;
+    version_str.parse().ok()
 }

@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use frm::releases::parse_version_from_release_name;
+use frm::releases::{parse_version_from_release_name, parse_version_from_tag};
 use frm::version::Version;
 
 #[test]
@@ -99,4 +99,37 @@ fn version_download_url_rc() {
 
     assert!(url.contains("github.com/rabbitmq/rabbitmq-server/releases"));
     assert!(url.contains("v4.2.0-rc.1"));
+}
+
+#[test]
+fn parse_version_from_tag_ga() {
+    let v = parse_version_from_tag("v4.2.3");
+    assert!(v.is_some());
+    assert_eq!(v.unwrap().to_string(), "4.2.3");
+}
+
+#[test]
+fn parse_version_from_tag_rc() {
+    let v = parse_version_from_tag("v4.2.0-rc.1");
+    assert!(v.is_some());
+    assert_eq!(v.unwrap().to_string(), "4.2.0-rc.1");
+}
+
+#[test]
+fn parse_version_from_tag_beta() {
+    let v = parse_version_from_tag("v4.2.0-beta.1");
+    assert!(v.is_some());
+    assert_eq!(v.unwrap().to_string(), "4.2.0-beta.1");
+}
+
+#[test]
+fn parse_version_from_tag_no_prefix() {
+    let v = parse_version_from_tag("4.2.3");
+    assert!(v.is_none());
+}
+
+#[test]
+fn parse_version_from_tag_invalid() {
+    assert!(parse_version_from_tag("").is_none());
+    assert!(parse_version_from_tag("vinvalid").is_none());
 }

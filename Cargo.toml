@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/frm-bin", "crates/rabbitmq-conf", "crates/rabbitmq-versioning"]
+members = ["crates/frm-bin", "crates/rabbitmq-conf", "crates/rabbitmq-versioning", "crates/tool-versions"]
 
 [workspace.package]
 version = "0.12.0"

@@ -8,7 +8,7 @@
 
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use flate2::read::GzDecoder;
 use tar::Archive;
@@ -116,7 +116,7 @@ pub fn extract_tarball(tarball_path: &Path, version: &Version, paths: &Paths) ->
     Ok(())
 }
 
-fn find_extracted_rabbitmq_dir(temp_dir: &Path) -> Result<std::path::PathBuf> {
+fn find_extracted_rabbitmq_dir(temp_dir: &Path) -> Result<PathBuf> {
     let mut fallback = None;
 
     for entry in fs::read_dir(temp_dir)? {

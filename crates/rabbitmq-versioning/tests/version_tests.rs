@@ -9,7 +9,6 @@
 use std::collections::HashSet;
 
 use rabbitmq_versioning::{Error, Prerelease, Version};
-use serde_json;
 
 #[test]
 fn parse_valid_version() {

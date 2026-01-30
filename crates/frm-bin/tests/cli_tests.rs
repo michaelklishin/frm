@@ -2478,3 +2478,69 @@ fn cli_default_latest_with_whitespace() {
         .success()
         .stdout(predicate::str::contains("Default version set to 4.2.3"));
 }
+
+#[test]
+fn cli_erlang_help() {
+    frm_cmd()
+        .args(["erlang", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Manage Erlang/OTP version"));
+}
+
+#[test]
+fn cli_erlang_set_in_tool_versions() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .current_dir(temp.path())
+        .args([
+            "erlang",
+            "set-in-tool-versions",
+            "--rabbitmq-version",
+            "4.2.3",
+            "--erlang-version",
+            "26.2.1",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("erlang 26.2.1"));
+
+    let content = fs::read_to_string(temp.path().join(".tool-versions")).unwrap();
+    assert!(content.contains("erlang 26.2.1"));
+    assert!(content.contains("rabbitmq 4.2.3"));
+}
+
+#[test]
+fn cli_erlang_set_in_tool_versions_with_path() {
+    let temp = TempDir::new().unwrap();
+    let subdir = temp.path().join("project");
+    fs::create_dir(&subdir).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args([
+            "erlang",
+            "set-in-tool-versions",
+            "--rabbitmq-version",
+            "4.2.3",
+            "--erlang-version",
+            "26.2.1",
+            "--path",
+            subdir.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let content = fs::read_to_string(subdir.join(".tool-versions")).unwrap();
+    assert!(content.contains("erlang 26.2.1"));
+    assert!(content.contains("rabbitmq 4.2.3"));
+}
+
+#[test]
+fn cli_erlang_set_in_tool_versions_requires_versions() {
+    frm_cmd()
+        .args(["erlang", "set-in-tool-versions"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("--rabbitmq-version"));
+}

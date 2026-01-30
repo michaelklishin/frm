@@ -56,7 +56,7 @@ proptest! {
         let b = Version::new(b_major, b_minor, b_patch);
 
         if a < b {
-            prop_assert!(!(b < a));
+            prop_assert!(b >= a);
         }
     }
 
