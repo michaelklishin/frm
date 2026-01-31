@@ -1,11 +1,17 @@
 # frm Change Log
 
-## v0.13.0 (in development)
+## v0.13.0 (Jan 31, 2026)
 
 ### Enhancements
 
  * New command `status` shows active, default, and installed versions
  * New commands `releases use`, `alphas use`, and `tanzu use` replace the top-level `use` command
+ * Commands that accept a positional `[VERSION]` argument now also support `--version`/`-V` as an alternative:
+   `releases use`, `releases install`, `releases reinstall`, `releases uninstall`, `alphas use`, `alphas install`, `alphas reinstall`, `alphas uninstall`, `tanzu use`, `default`
+
+### Breaking Changes
+
+ * `alphas install --latest` was removed; use `alphas install --version latest` (or `alphas install latest`) instead
 
 
 ## v0.12.0 (Jan 31, 2026)
