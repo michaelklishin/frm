@@ -1,10 +1,20 @@
 #!/usr/bin/env nu
 
-let version = $env.VERSION
+let version = $env.VERSION? | default ""
+if $version == "" {
+    print "ERROR: VERSION environment variable is not set"
+    exit 1
+}
+
 let header = $'## v($version)'
 
 let lines = open CHANGELOG.md | lines
-let start_idx = $lines | enumerate | where { |it| $it.item | str starts-with $header } | get 0.index
+let start_idx = $lines | enumerate | where { |it| $it.item | str starts-with $header } | get -i 0.index
+
+if $start_idx == null {
+    print $"ERROR: Version header '($header)' not found in CHANGELOG.md"
+    exit 1
+}
 
 let remaining = $lines | skip ($start_idx + 1)
 let end_offset = $remaining | enumerate | where { |it| $it.item | str starts-with '## v' } | get -i 0.index | default ($remaining | length)

@@ -1,8 +1,10 @@
-# frm Change Log
+# frm Changelog
 
 ## v0.15.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Further release automation improvements
 
 
 ## v0.14.0 (Jan 31, 2026)
