@@ -10,7 +10,7 @@ use clap::{Arg, ArgAction, Command};
 
 pub use bel7_cli::CompletionShell;
 
-use crate::commands::{CONFIG_FILES, RABBITMQ_TOOLS};
+use crate::commands::{CONFIG_FILES, EtcFile, RABBITMQ_TOOLS};
 use crate::shell::Shell;
 
 pub fn build_cli() -> Command {
@@ -43,6 +43,7 @@ fn releases_command() -> Command {
         .subcommand(releases_install_command())
         .subcommand(releases_reinstall_command())
         .subcommand(releases_uninstall_command())
+        .subcommand(releases_cp_etc_file_command())
         .subcommand(releases_completions_command())
 }
 
@@ -146,6 +147,42 @@ fn releases_uninstall_command() -> Command {
         )
 }
 
+fn releases_cp_etc_file_command() -> Command {
+    cp_etc_file_command("Copy a configuration file to a stable release's etc/rabbitmq directory")
+}
+
+fn alphas_cp_etc_file_command() -> Command {
+    cp_etc_file_command("Copy a configuration file to an alpha release's etc/rabbitmq directory")
+}
+
+fn cp_etc_file_command(about: &'static str) -> Command {
+    Command::new("cp-etc-file")
+        .about(about)
+        .long_about(format!(
+            "{}\n\n\
+            Copies a local file to the version's etc/rabbitmq directory.\n\n\
+            Supported files: {}",
+            about,
+            EtcFile::all_names().join(", ")
+        ))
+        .arg(
+            Arg::new("local_file_path")
+                .long("local-file-path")
+                .help("Path to the local file to copy")
+                .required(true)
+                .value_name("PATH"),
+        )
+        .arg(
+            Arg::new("etc_file")
+                .long("etc-file")
+                .help("Target configuration file name")
+                .required(true)
+                .value_name("FILE")
+                .value_parser(EtcFile::all_names()),
+        )
+        .arg(version_arg())
+}
+
 fn alphas_command() -> Command {
     Command::new("alphas")
         .about("Install, manage, rotate alpha RabbitMQ releases")
@@ -156,6 +193,7 @@ fn alphas_command() -> Command {
         .subcommand(alphas_install_command())
         .subcommand(alphas_reinstall_command())
         .subcommand(alphas_uninstall_command())
+        .subcommand(alphas_cp_etc_file_command())
         .subcommand(alphas_prune_command())
         .subcommand(alphas_clean_command())
         .subcommand(alphas_completions_command())

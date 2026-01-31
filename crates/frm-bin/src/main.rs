@@ -138,6 +138,24 @@ async fn main() {
                 }
                 _ => Ok(()),
             },
+            Some(("cp-etc-file", cp_sub)) => {
+                let local_path = cp_sub
+                    .get_one::<String>("local_file_path")
+                    .map(PathBuf::from)
+                    .unwrap();
+                let etc_file_str = cp_sub.get_one::<String>("etc_file").unwrap();
+                let version_arg = cp_sub.get_one::<String>("version");
+
+                match etc_file_str.parse::<commands::EtcFile>() {
+                    Ok(etc_file) => match resolve_version(&paths, version_arg) {
+                        Ok(version) => {
+                            commands::cp_etc_file_release(&paths, &version, &local_path, etc_file)
+                        }
+                        Err(e) => Err(e),
+                    },
+                    Err(e) => Err(e),
+                }
+            }
             _ => Ok(()),
         },
 
@@ -195,6 +213,24 @@ async fn main() {
 
                 match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_alpha(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("cp-etc-file", cp_sub)) => {
+                let local_path = cp_sub
+                    .get_one::<String>("local_file_path")
+                    .map(PathBuf::from)
+                    .unwrap();
+                let etc_file_str = cp_sub.get_one::<String>("etc_file").unwrap();
+                let version_arg = cp_sub.get_one::<String>("version");
+
+                match etc_file_str.parse::<commands::EtcFile>() {
+                    Ok(etc_file) => match resolve_alpha_version(&paths, version_arg) {
+                        Ok(version) => {
+                            commands::cp_etc_file_alpha(&paths, &version, &local_path, etc_file)
+                        }
+                        Err(e) => Err(e),
+                    },
                     Err(e) => Err(e),
                 }
             }
