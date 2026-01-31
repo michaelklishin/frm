@@ -187,6 +187,21 @@ jobs:
     needs: [release]
     runs-on: ubuntu-24.04
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Install Nu Shell
+      uses: hustcer/setup-nu@v3
+      with:
+        version: '0.100'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract changelog for release
+      run: nu ./scripts/extract-changelog.nu
+      env:
+        VERSION: ${{ vars.NEXT_RELEASE_VERSION }}
+
     - name: Fetch macOS archive
       uses: actions/download-artifact@v4
       with:
@@ -227,6 +242,7 @@ jobs:
       with:
         tag_name: v${{ vars.NEXT_RELEASE_VERSION }}
         draft: false
+        body_path: release_notes.md
         files: ./artifacts/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
