@@ -1,11 +1,12 @@
 # frm Change Log
 
-## v0.12.0 (in development)
+## v0.12.0 (Jan 31, 2026)
 
 ### Enhancements
 
  * `releases install latest` now fetches the latest GA release from GitHub when no versions are installed locally
  * `frm help` now displays the tool version
+ * New commands, `releases cp-etc-file` and `alphas cp-etc-file`, for copying configuration files to a version's `etc/rabbitmq` directory
 
 
 ## v0.11.0 (Jan 26, 2026)
