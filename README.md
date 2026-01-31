@@ -78,25 +78,25 @@ This shows the active version (if any), the default version, and all installed v
 ### Install a Release
 
 ```shell
-frm releases install 4.2.3
+frm releases install --version 4.2.3
 ```
 
 ```shell
-frm releases install 4.2.0-rc.1
+frm releases install --version 4.2.0-rc.1
 ```
 
 ```shell
 # Force reinstallation
-frm releases install --force 4.2.3
+frm releases install --force --version 4.2.3
 ```
 
 ### Install an Alpha Release
 
 ```shell
-frm alphas install 4.2.0-alpha.20250120
+frm alphas install --version 4.2.0-alpha.20250120
 
 # Install the latest available alpha
-frm alphas install latest
+frm alphas install --version latest
 ```
 
 ### List Installed Releases
@@ -112,11 +112,11 @@ frm alphas list
 ### Uninstall a Release
 
 ```shell
-frm releases uninstall 4.2.3
+frm releases uninstall --version 4.2.3
 ```
 
 ```shell
-frm alphas uninstall 4.2.0-alpha.20250120
+frm alphas uninstall --version 4.2.0-alpha.20250120
 ```
 
 ### Clean Up Alpha Releases
@@ -134,32 +134,25 @@ frm alphas clean --older-than "2 weeks ago"
 
 ```shell
 # bash/zsh
-eval "$(frm releases use 4.2.3)"
+eval "$(frm releases use --version 4.2.3)"
 
 # Use the latest installed GA version
-eval "$(frm releases use latest)"
+eval "$(frm releases use --version latest)"
 
 # Use an alpha release
-eval "$(frm alphas use 4.2.0-alpha.20250120)"
+eval "$(frm alphas use --version 4.2.0-alpha.20250120)"
 
 # Use a Tanzu RabbitMQ release
-eval "$(frm tanzu use 4.2.3)"
-```
-
-The version can also be specified with `--version` or `-V`:
-
-```shell
-eval "$(frm releases use --version 4.2.3)"
-eval "$(frm releases use -V latest)"
+eval "$(frm tanzu use --version 4.2.3)"
 ```
 
 ### Set Default Version
 
 ```shell
-frm default 4.2.3
+frm default --version 4.2.3
 
 # Use the latest installed GA version
-frm default latest
+frm default --version latest
 ```
 
 ### Run RabbitMQ CLI Tools
