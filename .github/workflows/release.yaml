@@ -14,8 +14,27 @@ permissions:
   contents: write
 
 jobs:
+  validate_version:
+    name: Validate Release Version
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install Nu Shell
+      uses: hustcer/setup-nu@v3
+      with:
+        version: '0.100'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Validate NEXT_RELEASE_VERSION matches tag
+      run: nu ./scripts/validate-release-version.nu
+      env:
+        NEXT_RELEASE_VERSION: ${{ vars.NEXT_RELEASE_VERSION }}
+
   release:
     name: Build and Archive
+    needs: [validate_version]
 
     runs-on: ${{ matrix.os }}
 
