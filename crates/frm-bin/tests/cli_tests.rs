@@ -1008,19 +1008,17 @@ fn cli_alphas_install_help() {
         .stdout(predicate::str::contains(
             "Install an alpha RabbitMQ release",
         ))
-        .stdout(predicate::str::contains("--latest"));
+        .stdout(predicate::str::contains("'latest'"));
 }
 
 #[test]
-fn cli_alphas_install_requires_version_or_latest() {
+fn cli_alphas_install_requires_version() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
         .args(["alphas", "install"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains(
-            "specify a version or use --latest",
-        ));
+        .stderr(predicate::str::contains("no version specified"));
 }
 
 #[test]

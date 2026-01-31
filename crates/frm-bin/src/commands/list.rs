@@ -39,7 +39,7 @@ pub fn run_alphas(paths: &Paths) -> Result<()> {
 
     if alphas.is_empty() {
         print_warning("No alpha RabbitMQ releases installed");
-        print_info("Install an alpha with: frm alphas install --latest");
+        print_info("Install an alpha with: frm alphas install latest");
         return Ok(());
     }
 

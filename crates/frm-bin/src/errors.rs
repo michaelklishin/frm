@@ -81,7 +81,7 @@ pub enum Error {
     #[error("no GA versions installed (use 'frm releases install' first)")]
     NoGAVersionsInstalled,
 
-    #[error("no alpha versions installed (use 'frm alphas install --latest' first)")]
+    #[error("no alpha versions installed (use 'frm alphas install latest' first)")]
     NoAlphaVersionsInstalled,
 
     #[error("invalid date/time: {0}")]

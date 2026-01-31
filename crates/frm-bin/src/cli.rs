@@ -59,6 +59,7 @@ fn releases_command() -> Command {
 }
 
 fn releases_use_command() -> Command {
+    const HELP: &str = "Version to use (e.g., 4.2.3 or 'latest')";
     Command::new("use")
         .about("Output shell commands to use a specific release version")
         .long_about(
@@ -67,11 +68,8 @@ fn releases_use_command() -> Command {
             bash/zsh: eval \"$(frm releases use [version])\"\n\
             nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to use (e.g., 4.2.3 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
         .arg(
             Arg::new("shell")
                 .long("shell")
@@ -131,6 +129,7 @@ fn releases_logs_command() -> Command {
 }
 
 fn releases_install_command() -> Command {
+    const HELP: &str = "Version to install (e.g., 4.2.3 or 4.2.0-rc.1)";
     Command::new("install")
         .visible_alias("i")
         .about("Install a stable RabbitMQ release")
@@ -138,11 +137,8 @@ fn releases_install_command() -> Command {
             "Install a stable RabbitMQ release (beta, rc, or GA).\n\n\
             Alpha versions are not allowed; use 'frm alphas install' instead.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to install (e.g., 4.2.3 or 4.2.0-rc.1)")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
         .arg(
             Arg::new("force")
                 .long("force")
@@ -153,20 +149,19 @@ fn releases_install_command() -> Command {
 }
 
 fn releases_reinstall_command() -> Command {
+    const HELP: &str = "Version to reinstall (e.g., 4.2.3)";
     Command::new("reinstall")
         .about("Reinstall a stable RabbitMQ release")
         .long_about(
             "Reinstall a stable RabbitMQ release.\n\n\
             Removes the existing installation and downloads a fresh copy.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to reinstall (e.g., 4.2.3)")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
 }
 
 fn releases_uninstall_command() -> Command {
+    const HELP: &str = "Version to uninstall (e.g., 4.2.3 or 'latest')";
     Command::new("uninstall")
         .visible_alias("rm")
         .about("Uninstall a stable RabbitMQ release")
@@ -174,11 +169,8 @@ fn releases_uninstall_command() -> Command {
             "Uninstall a stable RabbitMQ release.\n\n\
             Use 'latest' to uninstall the most recent installed GA version.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to uninstall (e.g., 4.2.3 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
 }
 
 fn releases_cp_etc_file_command() -> Command {
@@ -235,6 +227,7 @@ fn alphas_command() -> Command {
 }
 
 fn alphas_use_command() -> Command {
+    const HELP: &str = "Alpha version to use (e.g., 4.3.0-alpha.132057c7 or 'latest')";
     Command::new("use")
         .about("Output shell commands to use a specific alpha version")
         .long_about(
@@ -243,11 +236,8 @@ fn alphas_use_command() -> Command {
             bash/zsh: eval \"$(frm alphas use [version])\"\n\
             nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
         )
-        .arg(
-            Arg::new("version")
-                .help("Alpha version to use (e.g., 4.3.0-alpha.132057c7 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
         .arg(
             Arg::new("shell")
                 .long("shell")
@@ -307,26 +297,16 @@ fn alphas_logs_command() -> Command {
 }
 
 fn alphas_install_command() -> Command {
+    const HELP: &str = "Alpha version to install (e.g., 4.3.0-alpha.132057c7 or 'latest')";
     Command::new("install")
         .visible_alias("i")
         .about("Install an alpha RabbitMQ release")
         .long_about(
             "Install an alpha RabbitMQ release from rabbitmq/server-packages.\n\n\
-            Use --latest to automatically install the most recent alpha release.",
+            Use 'latest' to automatically install the most recent alpha release.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Alpha version to install (e.g., 4.3.0-alpha.132057c7)")
-                .index(1)
-                .conflicts_with("latest"),
-        )
-        .arg(
-            Arg::new("latest")
-                .long("latest")
-                .short('l')
-                .help("Install the most recent alpha release")
-                .action(ArgAction::SetTrue),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
         .arg(
             Arg::new("force")
                 .long("force")
@@ -337,6 +317,7 @@ fn alphas_install_command() -> Command {
 }
 
 fn alphas_reinstall_command() -> Command {
+    const HELP: &str = "Alpha version to reinstall (e.g., 4.3.0-alpha.132057c7 or 'latest')";
     Command::new("reinstall")
         .about("Reinstall an alpha RabbitMQ release")
         .long_about(
@@ -344,14 +325,12 @@ fn alphas_reinstall_command() -> Command {
             Removes the existing installation and downloads a fresh copy.\n\n\
             Use 'latest' to reinstall the most recent installed alpha version.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Alpha version to reinstall (e.g., 4.3.0-alpha.132057c7 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
 }
 
 fn alphas_uninstall_command() -> Command {
+    const HELP: &str = "Alpha version to uninstall (e.g., 4.3.0-alpha.132057c7 or 'latest')";
     Command::new("uninstall")
         .visible_alias("rm")
         .about("Uninstall an alpha RabbitMQ release")
@@ -359,11 +338,8 @@ fn alphas_uninstall_command() -> Command {
             "Uninstall an alpha RabbitMQ release.\n\n\
             Use 'latest' to uninstall the most recent installed alpha version.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Alpha version to uninstall (e.g., 4.3.0-alpha.132057c7 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
 }
 
 fn alphas_prune_command() -> Command {
@@ -401,6 +377,7 @@ fn tanzu_command() -> Command {
 }
 
 fn tanzu_use_command() -> Command {
+    const HELP: &str = "Version to use (e.g., 4.2.3 or 'latest')";
     Command::new("use")
         .about("Output shell commands to use a specific Tanzu RabbitMQ version")
         .long_about(
@@ -409,11 +386,8 @@ fn tanzu_use_command() -> Command {
             bash/zsh: eval \"$(frm tanzu use [version])\"\n\
             nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to use (e.g., 4.2.3 or 'latest')")
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
         .arg(
             Arg::new("shell")
                 .long("shell")
@@ -514,18 +488,15 @@ fn conf_set_key_command() -> Command {
 }
 
 fn default_command() -> Command {
+    const HELP: &str = "Version to set as default (e.g., 4.2.3 or 'latest')";
     Command::new("default")
         .about("Set the default RabbitMQ version")
         .long_about(
             "Set the default RabbitMQ version.\n\n\
             Use 'latest' to select the most recent installed GA version.",
         )
-        .arg(
-            Arg::new("version")
-                .help("Version to set as default (e.g., 4.2.3 or 'latest')")
-                .required(true)
-                .index(1),
-        )
+        .arg(positional_version_arg(HELP))
+        .arg(version_opt_arg(HELP))
 }
 
 fn shell_command() -> Command {
@@ -627,4 +598,22 @@ fn version_arg() -> Arg {
         .short('V')
         .help("RabbitMQ version to use")
         .value_name("VERSION")
+}
+
+fn positional_version_arg(help: &'static str) -> Arg {
+    Arg::new("version").help(help).index(1)
+}
+
+fn version_opt_arg(help: &'static str) -> Arg {
+    Arg::new("version_opt")
+        .long("version")
+        .short('V')
+        .help(format!("{}; equivalent to the positional argument", help))
+        .value_name("VERSION")
+}
+
+pub fn get_version_arg(matches: &clap::ArgMatches) -> Option<&String> {
+    matches
+        .get_one::<String>("version")
+        .or_else(|| matches.get_one::<String>("version_opt"))
 }

@@ -11,7 +11,7 @@ use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
 
-use frm::cli::{CompletionShell, build_cli};
+use frm::cli::{CompletionShell, build_cli, get_version_arg};
 use frm::commands;
 use frm::errors::Error;
 use frm::paths::Paths;
@@ -77,7 +77,7 @@ async fn main() {
                 }
             }
             Some(("install", install_sub)) => {
-                let version_arg = install_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(install_sub);
                 let force = install_sub.get_flag("force");
 
                 let version_result = resolve_version(&paths, version_arg);
@@ -105,7 +105,7 @@ async fn main() {
                 }
             }
             Some(("reinstall", reinstall_sub)) => {
-                let version_arg = reinstall_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(reinstall_sub);
 
                 match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::reinstall_release(&paths, &version).await,
@@ -113,7 +113,7 @@ async fn main() {
                 }
             }
             Some(("uninstall", uninstall_sub)) => {
-                let version_arg = uninstall_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(uninstall_sub);
 
                 match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_release(&paths, &version),
@@ -159,7 +159,7 @@ async fn main() {
                 }
             }
             Some(("use", use_sub)) => {
-                let version_arg = use_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(use_sub);
                 let shell = use_sub.get_one::<Shell>("shell").copied();
 
                 match resolve_version(&paths, version_arg) {
@@ -185,34 +185,30 @@ async fn main() {
                 }
             }
             Some(("install", install_sub)) => {
-                let version_arg = install_sub.get_one::<String>("version");
-                let latest = install_sub.get_flag("latest");
+                let version_arg = get_version_arg(install_sub);
                 let force = install_sub.get_flag("force");
 
-                if latest {
-                    print_info("Fetching latest alpha release...");
-                    let client = reqwest::Client::new();
-                    match find_latest_alpha(&client).await {
-                        Ok(alpha) => {
-                            print_info(format!("Found: {}", alpha.version));
-                            commands::install_alpha(&paths, &alpha.version, force).await
+                match version_arg {
+                    Some(v) if v.trim().eq_ignore_ascii_case("latest") => {
+                        print_info("Fetching latest alpha release...");
+                        let client = reqwest::Client::new();
+                        match find_latest_alpha(&client).await {
+                            Ok(alpha) => {
+                                print_info(format!("Found: {}", alpha.version));
+                                commands::install_alpha(&paths, &alpha.version, force).await
+                            }
+                            Err(e) => Err(e),
                         }
-                        Err(e) => Err(e),
                     }
-                } else {
-                    match version_arg {
-                        Some(v) => match v.parse::<Version>() {
-                            Ok(version) => commands::install_alpha(&paths, &version, force).await,
-                            Err(e) => Err(e.into()),
-                        },
-                        None => Err(Error::InvalidVersion(
-                            "specify a version or use --latest".into(),
-                        )),
-                    }
+                    Some(v) => match v.parse::<Version>() {
+                        Ok(version) => commands::install_alpha(&paths, &version, force).await,
+                        Err(e) => Err(e.into()),
+                    },
+                    None => Err(Error::InvalidVersion("no version specified".into())),
                 }
             }
             Some(("reinstall", reinstall_sub)) => {
-                let version_arg = reinstall_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(reinstall_sub);
 
                 match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::reinstall_alpha(&paths, &version).await,
@@ -220,7 +216,7 @@ async fn main() {
                 }
             }
             Some(("uninstall", uninstall_sub)) => {
-                let version_arg = uninstall_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(uninstall_sub);
 
                 match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_alpha(&paths, &version),
@@ -228,7 +224,7 @@ async fn main() {
                 }
             }
             Some(("use", use_sub)) => {
-                let version_arg = use_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(use_sub);
                 let shell = use_sub.get_one::<Shell>("shell").copied();
 
                 match resolve_alpha_version(&paths, version_arg) {
@@ -297,7 +293,7 @@ async fn main() {
                 }
             }
             Some(("use", use_sub)) => {
-                let version_arg = use_sub.get_one::<String>("version");
+                let version_arg = get_version_arg(use_sub);
                 let shell = use_sub.get_one::<Shell>("shell").copied();
 
                 match resolve_version(&paths, version_arg) {
@@ -333,7 +329,7 @@ async fn main() {
         },
 
         Some(("default", sub)) => {
-            let version_arg = sub.get_one::<String>("version");
+            let version_arg = get_version_arg(sub);
 
             match resolve_version(&paths, version_arg) {
                 Ok(version) => commands::default(&paths, &version),

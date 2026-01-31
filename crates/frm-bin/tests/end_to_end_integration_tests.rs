@@ -347,7 +347,7 @@ fn end_to_end_alphas_install_latest_and_list() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success()
         .stdout(predicate::str::contains("installed"));
@@ -364,7 +364,7 @@ fn end_to_end_alphas_install_and_uninstall() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success();
 
@@ -398,7 +398,7 @@ fn end_to_end_alphas_prune() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success();
 
@@ -420,7 +420,7 @@ fn end_to_end_alphas_path() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success();
 
@@ -575,7 +575,7 @@ fn end_to_end_alphas_uninstall_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success();
 
@@ -791,7 +791,7 @@ fn end_to_end_scenario_mixed_releases_and_alphas() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["alphas", "install", "--latest"])
+        .args(["alphas", "install", "latest"])
         .assert()
         .success();
 
