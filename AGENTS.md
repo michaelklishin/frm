@@ -24,7 +24,7 @@ This is a Rust workspace with three crates:
 
 ### The `rabbitmq-conf` Crate
 
-Implements a `rabbitmq.conf` parser plus provides configuration key manupilation features.
+Implements a `rabbitmq.conf` parser plus provides configuration key manipulation features.
 
  * `conf.rs`: [`winnow`](https://docs.rs/winnow)-based parser for `rabbitmq.conf` files (the [`cuttlefish`](https://github.com/kyorai/cuttlefish) ini-like format)
  * `keys.rs`: key validation against known RabbitMQ Cuttlefish schemas (both core `rabbit.schema` and those coming from all tier-1 plugins)
