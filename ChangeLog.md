@@ -4,7 +4,7 @@
 
 ### Enhancements
 
- * TBD
+ * Release automation improvements
 
 
 ## v0.13.0 (Jan 31, 2026)
