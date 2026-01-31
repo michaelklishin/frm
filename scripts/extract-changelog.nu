@@ -3,7 +3,7 @@
 let version = $env.VERSION
 let header = $'## v($version)'
 
-let lines = open ChangeLog.md | lines
+let lines = open CHANGELOG.md | lines
 let start_idx = $lines | enumerate | where { |it| $it.item | str starts-with $header } | get 0.index
 
 let remaining = $lines | skip ($start_idx + 1)

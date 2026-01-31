@@ -2,9 +2,7 @@
 
 ## v0.15.0 (in development)
 
-### Enhancements
-
- * TBD
+No changes yet.
 
 
 ## v0.14.0 (Jan 31, 2026)
