@@ -25,22 +25,23 @@ frm help
 which will output a list of command groups:
 
 ```
+frm 0.14.0
 Frakking RabbitMQ version Manager
 
 Usage: frm [COMMAND]
 
 Commands:
-  status       Show frm status: active version, default, installed versions
-  releases     Install or manage RabbitMQ releases (GA, RCs, betas); for alphas, see the 'alphas' command group
-  alphas       Install, manage, rotate alpha RabbitMQ releases
-  tanzu        Install and manage Tanzu RabbitMQ from local tarballs
-  conf         Manage RabbitMQ configuration files
-  default      Set the default RabbitMQ version
-  cli          Run a RabbitMQ CLI tool
-  fg           Run RabbitMQ nodes in foreground
-  inspect      Inspect a RabbitMQ configuration file
-  shell        Shell-related operations
-  help         Print this message or the help of the given subcommand(s)
+  status    Show frm status: active version, default, installed versions
+  releases  Install or manage RabbitMQ releases (GA, RCs, betas); for alphas, see the 'alphas' command group
+  alphas    Install, manage, rotate alpha RabbitMQ releases
+  tanzu     Install and manage Tanzu RabbitMQ from local tarballs
+  conf      Manage RabbitMQ configuration files
+  default   Set the default RabbitMQ version
+  cli       Run a RabbitMQ CLI tool
+  fg        Run RabbitMQ nodes in foreground
+  inspect   Inspect a RabbitMQ configuration file
+  shell     Shell-related operations
+  help      Print this message or the help of the given subcommand(s)
 ```
 
 To explore commands in a specific group, use
@@ -66,6 +67,14 @@ frm shell env nu | save -f ~/.local/frm/env.nu
 
 After setup, use `frm-use <version>` to switch versions.
 
+### Check Status
+
+```shell
+frm status
+```
+
+This shows the active version (if any), the default version, and all installed versions.
+
 ### Install a Release
 
 ```shell
@@ -85,6 +94,9 @@ frm releases install --force 4.2.3
 
 ```shell
 frm alphas install 4.2.0-alpha.20250120
+
+# Install the latest available alpha
+frm alphas install latest
 ```
 
 ### List Installed Releases
@@ -126,6 +138,19 @@ eval "$(frm releases use 4.2.3)"
 
 # Use the latest installed GA version
 eval "$(frm releases use latest)"
+
+# Use an alpha release
+eval "$(frm alphas use 4.2.0-alpha.20250120)"
+
+# Use a Tanzu RabbitMQ release
+eval "$(frm tanzu use 4.2.3)"
+```
+
+The version can also be specified with `--version` or `-V`:
+
+```shell
+eval "$(frm releases use --version 4.2.3)"
+eval "$(frm releases use -V latest)"
 ```
 
 ### Set Default Version
