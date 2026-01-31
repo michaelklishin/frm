@@ -195,23 +195,23 @@ fn cli_releases_install_already_exists() {
 }
 
 #[test]
-fn cli_use_not_installed() {
+fn cli_releases_use_not_installed_shows_install_hint() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.2.3"])
+        .args(["releases", "use", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn cli_use_installed() {
+fn cli_releases_use_installed() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(version_dir.join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.2.3", "--shell", "bash"])
+        .args(["releases", "use", "4.2.3", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("export PATH="))
@@ -219,27 +219,27 @@ fn cli_use_installed() {
 }
 
 #[test]
-fn cli_use_with_shell_flag() {
+fn cli_releases_use_with_shell_flag() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(version_dir.join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.2.3", "--shell", "nu"])
+        .args(["releases", "use", "4.2.3", "--shell", "nu"])
         .assert()
         .success()
         .stdout(predicate::str::contains("$env.PATH"));
 }
 
 #[test]
-fn cli_use_with_frm_shell_env() {
+fn cli_releases_use_with_frm_shell_env() {
     let temp = TempDir::new().unwrap();
     let version_dir = temp.path().join("versions").join("4.2.3");
     fs::create_dir_all(version_dir.join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
         .env("FRM_SHELL", "nu")
-        .args(["use", "4.2.3"])
+        .args(["releases", "use", "4.2.3"])
         .assert()
         .success()
         .stdout(predicate::str::contains("$env.PATH"));
@@ -575,10 +575,10 @@ fn cli_shell_env_requires_shell() {
 }
 
 #[test]
-fn cli_invalid_version_format() {
+fn cli_releases_use_invalid_version_format() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["use", "invalid"])
+        .args(["releases", "use", "invalid"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("invalid version format"));
@@ -1673,24 +1673,24 @@ fn cli_releases_reinstall_rejects_alpha() {
 }
 
 #[test]
-fn cli_use_shows_releases_install_for_ga() {
+fn cli_releases_use_shows_install_hint_for_ga() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.2.3"])
+        .args(["releases", "use", "4.2.3"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("frm releases install 4.2.3"));
 }
 
 #[test]
-fn cli_use_shows_alphas_install_for_alpha() {
+fn cli_releases_use_rejects_alpha_version() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.3.0-alpha.abc123"])
+        .args(["releases", "use", "4.3.0-alpha.abc123"])
         .assert()
         .failure()
         .stderr(predicate::str::contains(
-            "frm alphas install 4.3.0-alpha.abc123",
+            "this command only supports release versions",
         ));
 }
 
@@ -1933,30 +1933,30 @@ fn cli_conf_get_key_pattern_no_match() {
 }
 
 #[test]
-fn cli_use_latest_no_versions() {
+fn cli_releases_use_latest_no_versions() {
     let temp = TempDir::new().unwrap();
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest"])
+        .args(["releases", "use", "latest"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("no GA versions installed"));
 }
 
 #[test]
-fn cli_use_latest_only_alphas() {
+fn cli_releases_use_latest_only_alphas() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest"])
+        .args(["releases", "use", "latest"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("no GA versions installed"));
 }
 
 #[test]
-fn cli_use_latest_selects_highest_ga() {
+fn cli_releases_use_latest_selects_highest_ga() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.0.0").join("sbin")).unwrap();
@@ -1964,14 +1964,14 @@ fn cli_use_latest_selects_highest_ga() {
     fs::create_dir_all(versions_dir.join("4.1.0").join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.2.3"));
 }
 
 #[test]
-fn cli_use_latest_ignores_prereleases() {
+fn cli_releases_use_latest_ignores_prereleases() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
@@ -1980,26 +1980,26 @@ fn cli_use_latest_ignores_prereleases() {
     fs::create_dir_all(versions_dir.join("4.3.0-rc.1").join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.2.3"));
 }
 
 #[test]
-fn cli_use_latest_case_insensitive() {
+fn cli_releases_use_latest_case_insensitive() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "LATEST", "--shell", "bash"])
+        .args(["releases", "use", "LATEST", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.2.3"));
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "Latest", "--shell", "bash"])
+        .args(["releases", "use", "Latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.2.3"));
@@ -2099,9 +2099,9 @@ fn cli_default_latest_updates_config_and_file() {
 }
 
 #[test]
-fn cli_use_help_mentions_latest() {
+fn cli_releases_use_help_mentions_latest() {
     frm_cmd()
-        .args(["use", "--help"])
+        .args(["releases", "use", "--help"])
         .assert()
         .success()
         .stdout(predicate::str::contains("latest"));
@@ -2200,13 +2200,13 @@ fn cli_alphas_uninstall_latest_selects_highest() {
 }
 
 #[test]
-fn cli_use_latest_with_whitespace() {
+fn cli_releases_use_latest_with_whitespace() {
     let temp = TempDir::new().unwrap();
     let versions_dir = temp.path().join("versions");
     fs::create_dir_all(versions_dir.join("4.2.3").join("sbin")).unwrap();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "  latest  ", "--shell", "bash"])
+        .args(["releases", "use", "  latest  ", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("4.2.3"));
@@ -2223,4 +2223,165 @@ fn cli_default_latest_with_whitespace() {
         .assert()
         .success()
         .stdout(predicate::str::contains("Default version set to 4.2.3"));
+}
+
+#[test]
+fn cli_alphas_use_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_alphas_use_installed() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(version_dir.join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "4.3.0-alpha.abc123", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("export PATH="))
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_alphas_use_with_shell_flag() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(version_dir.join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "4.3.0-alpha.abc123", "--shell", "nu"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("$env.PATH"));
+}
+
+#[test]
+fn cli_alphas_use_with_frm_shell_env() {
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("versions").join("4.3.0-alpha.abc123");
+    fs::create_dir_all(version_dir.join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .env("FRM_SHELL", "nu")
+        .args(["alphas", "use", "4.3.0-alpha.abc123"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("$env.PATH"));
+}
+
+#[test]
+fn cli_alphas_use_rejects_release_version() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "this command only supports alpha versions",
+        ));
+}
+
+#[test]
+fn cli_alphas_use_shows_install_hint() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "4.3.0-alpha.abc123"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("frm alphas install"));
+}
+
+#[test]
+fn cli_alphas_use_latest_no_alphas() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no alpha versions installed"));
+}
+
+#[test]
+fn cli_alphas_use_latest_only_releases() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.2.3")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "latest"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no alpha versions installed"));
+}
+
+#[test]
+fn cli_alphas_use_latest_selects_highest_alpha() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.1").join("sbin")).unwrap();
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.2").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.2"));
+}
+
+#[test]
+fn cli_alphas_use_latest_case_insensitive() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "LATEST", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "Latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
+}
+
+#[test]
+fn cli_alphas_use_help_mentions_latest() {
+    frm_cmd()
+        .args(["alphas", "use", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
+}
+
+#[test]
+fn cli_alphas_use_invalid_version_format() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "invalid"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid version format"));
+}
+
+#[test]
+fn cli_alphas_use_latest_with_whitespace() {
+    let temp = TempDir::new().unwrap();
+    let versions_dir = temp.path().join("versions");
+    fs::create_dir_all(versions_dir.join("4.3.0-alpha.abc123").join("sbin")).unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["alphas", "use", "  latest  ", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
 }

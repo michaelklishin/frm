@@ -6,21 +6,25 @@
 
 def "nu-complete frm commands" [] {
     [
-        { value: "list", description: "List installed RabbitMQ versions" }
-        { value: "install", description: "Install a RabbitMQ version" }
-        { value: "use", description: "Output shell commands to use a specific version" }
+        { value: "status", description: "Show frm status" }
+        { value: "releases", description: "Manage RabbitMQ releases" }
+        { value: "alphas", description: "Manage alpha releases" }
+        { value: "tanzu", description: "Manage Tanzu RabbitMQ" }
         { value: "default", description: "Set the default RabbitMQ version" }
-        { value: "uninstall", description: "Uninstall a RabbitMQ version" }
-        { value: "env", description: "Output shell initialization script" }
-        { value: "completions", description: "Generate shell completions" }
+        { value: "shell", description: "Shell environment and completions" }
     ]
 }
 
-def "nu-complete frm versions" [] {
-    frm list
+def "nu-complete frm releases versions" [] {
+    frm releases completions --shell nu
     | lines
-    | where { |line| $line | str starts-with "[" }
-    | each { |line| $line | str replace --regex '^\[.\] ' '' }
+    | where { |line| $line | str length > 0 }
+}
+
+def "nu-complete frm alphas versions" [] {
+    frm alphas completions --shell nu
+    | lines
+    | where { |line| $line | str length > 0 }
 }
 
 def "nu-complete frm shells" [] {
@@ -33,38 +37,77 @@ export extern "frm" [
     --version(-V)
 ]
 
-export extern "frm list" [
+export extern "frm status" [
     --help(-h)
 ]
 
-export extern "frm install" [
+export extern "frm releases list" [
+    --help(-h)
+]
+
+export extern "frm releases install" [
     version: string
     --force(-f)
     --help(-h)
 ]
 
-export extern "frm use" [
-    version: string@"nu-complete frm versions"
+export extern "frm releases use" [
+    version: string@"nu-complete frm releases versions"
+    --shell(-s): string@"nu-complete frm shells"
+    --help(-h)
+]
+
+export extern "frm releases uninstall" [
+    version: string@"nu-complete frm releases versions"
+    --help(-h)
+]
+
+export extern "frm alphas list" [
+    --help(-h)
+]
+
+export extern "frm alphas install" [
+    version?: string
+    --latest
+    --force(-f)
+    --help(-h)
+]
+
+export extern "frm alphas use" [
+    version: string@"nu-complete frm alphas versions"
+    --shell(-s): string@"nu-complete frm shells"
+    --help(-h)
+]
+
+export extern "frm alphas uninstall" [
+    version: string@"nu-complete frm alphas versions"
+    --help(-h)
+]
+
+export extern "frm tanzu install" [
+    --local-tanzu-rabbitmq-tarball-path: string
+    --version(-V): string
+    --force(-f)
+    --help(-h)
+]
+
+export extern "frm tanzu use" [
+    version: string@"nu-complete frm releases versions"
     --shell(-s): string@"nu-complete frm shells"
     --help(-h)
 ]
 
 export extern "frm default" [
-    version: string@"nu-complete frm versions"
+    version: string@"nu-complete frm releases versions"
     --help(-h)
 ]
 
-export extern "frm uninstall" [
-    version: string@"nu-complete frm versions"
-    --help(-h)
-]
-
-export extern "frm env" [
+export extern "frm shell env" [
     shell: string@"nu-complete frm shells"
     --help(-h)
 ]
 
-export extern "frm completions" [
+export extern "frm shell completions" [
     shell: string@"nu-complete frm shells"
     --help(-h)
 ]

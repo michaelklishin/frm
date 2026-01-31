@@ -12,25 +12,53 @@ use crate::paths::Paths;
 use crate::shell::Shell;
 use crate::version::Version;
 
-pub fn run(paths: &Paths, version: &Version, shell: Option<Shell>) -> Result<()> {
+pub fn run_release(paths: &Paths, version: &Version, shell: Option<Shell>) -> Result<()> {
+    if version.is_distributed_via_server_packages_repository() {
+        return Err(Error::AlphaVersionNotSupported);
+    }
+
     if !paths.version_installed(version) {
         let versions = paths.installed_versions()?;
-        let install_cmd = if version.is_distributed_via_server_packages_repository() {
-            "frm alphas install"
-        } else {
-            "frm releases install"
-        };
 
         if versions.is_empty() {
             eprintln!("No versions installed. Install one with:");
-            eprintln!("  {} {}", install_cmd, version);
+            eprintln!("  frm releases install {}", version);
         } else {
             eprintln!("Installed versions:");
             for v in &versions {
                 eprintln!("  {}", v);
             }
             eprintln!("\nInstall this version with:");
-            eprintln!("  {} {}", install_cmd, version);
+            eprintln!("  frm releases install {}", version);
+        }
+
+        return Err(Error::VersionNotInstalled(version.clone()));
+    }
+
+    let shell = shell.or_else(Shell::detect).unwrap_or(Shell::Bash);
+    print!("{}", shell.env_script(paths, version));
+
+    Ok(())
+}
+
+pub fn run_alpha(paths: &Paths, version: &Version, shell: Option<Shell>) -> Result<()> {
+    if !version.is_distributed_via_server_packages_repository() {
+        return Err(Error::ReleaseVersionNotSupported);
+    }
+
+    if !paths.version_installed(version) {
+        let versions = paths.installed_alpha_versions()?;
+
+        if versions.is_empty() {
+            eprintln!("No alpha versions installed. Install one with:");
+            eprintln!("  frm alphas install {}", version);
+        } else {
+            eprintln!("Installed alpha versions:");
+            for v in &versions {
+                eprintln!("  {}", v);
+            }
+            eprintln!("\nInstall this version with:");
+            eprintln!("  frm alphas install {}", version);
         }
 
         return Err(Error::VersionNotInstalled(version.clone()));

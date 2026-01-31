@@ -74,7 +74,7 @@ pub fn run(
         expected_version
     ));
     print_info(format!(
-        "Activate with: eval \"$(frm use {})\"",
+        "Activate with: eval \"$(frm tanzu use {})\"",
         expected_version
     ));
 

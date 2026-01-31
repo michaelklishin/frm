@@ -119,6 +119,14 @@ impl Paths {
         Ok(versions)
     }
 
+    pub fn installed_alpha_versions(&self) -> Result<Vec<Version>> {
+        let versions = self.installed_versions()?;
+        Ok(versions
+            .into_iter()
+            .filter(|v| v.is_distributed_via_server_packages_repository())
+            .collect())
+    }
+
     pub fn latest_ga_version(&self) -> Result<Option<Version>> {
         let versions = self.installed_versions()?;
         Ok(versions.into_iter().rev().find(|v| v.is_ga()))

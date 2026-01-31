@@ -21,17 +21,17 @@ pub async fn run_release(paths: &Paths, version: &Version, force: bool) -> Resul
     if version.is_distributed_via_server_packages_repository() {
         return Err(Error::ExpectedNonAlphaVersion(version.clone()));
     }
-    run(paths, version, force).await
+    run(paths, version, force, "releases").await
 }
 
 pub async fn run_alpha(paths: &Paths, version: &Version, force: bool) -> Result<()> {
     if !version.is_distributed_via_server_packages_repository() {
         return Err(Error::ExpectedAlphaVersion(version.clone()));
     }
-    run(paths, version, force).await
+    run(paths, version, force, "alphas").await
 }
 
-async fn run(paths: &Paths, version: &Version, force: bool) -> Result<()> {
+async fn run(paths: &Paths, version: &Version, force: bool, command_group: &str) -> Result<()> {
     if paths.version_installed(version) {
         if force {
             print_info(format!("Removing existing installation of {}", version));
@@ -58,7 +58,10 @@ async fn run(paths: &Paths, version: &Version, force: bool) -> Result<()> {
     timestamps.save(paths)?;
 
     print_success(format!("RabbitMQ {} installed successfully", version));
-    print_info(format!("Activate with: eval \"$(frm use {})\"", version));
+    print_info(format!(
+        "Activate with: eval \"$(frm {} use {})\"",
+        command_group, version
+    ));
 
     Ok(())
 }

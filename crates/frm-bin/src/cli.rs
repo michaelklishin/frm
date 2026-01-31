@@ -21,16 +21,26 @@ pub fn build_cli() -> Command {
         .about("Frakking RabbitMQ version Manager")
         .help_template("{name} {version}\n{about}\n\n{usage-heading} {usage}\n\n{all-args}")
         .arg_required_else_help(true)
+        .subcommand(status_command())
         .subcommand(releases_command())
         .subcommand(alphas_command())
         .subcommand(tanzu_command())
         .subcommand(conf_command())
-        .subcommand(use_command())
         .subcommand(default_command())
         .subcommand(cli_command())
         .subcommand(fg_command())
         .subcommand(inspect_command())
         .subcommand(shell_command())
+}
+
+fn status_command() -> Command {
+    Command::new("status")
+        .about("Show frm status: active version, default, installed versions")
+        .long_about(
+            "Show frm status: active version, default, installed versions.\n\n\
+            🟢 active in current shell (via 'frm releases use', 'frm alphas use', or 'frm tanzu use')\n\
+            ⚪ default version",
+        )
 }
 
 fn releases_command() -> Command {
@@ -43,8 +53,32 @@ fn releases_command() -> Command {
         .subcommand(releases_install_command())
         .subcommand(releases_reinstall_command())
         .subcommand(releases_uninstall_command())
+        .subcommand(releases_use_command())
         .subcommand(releases_cp_etc_file_command())
         .subcommand(releases_completions_command())
+}
+
+fn releases_use_command() -> Command {
+    Command::new("use")
+        .about("Output shell commands to use a specific release version")
+        .long_about(
+            "Output shell commands to use a specific release version.\n\n\
+            Use 'latest' to select the most recent installed GA version.\n\n\
+            bash/zsh: eval \"$(frm releases use [version])\"\n\
+            nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Version to use (e.g., 4.2.3 or 'latest')")
+                .index(1),
+        )
+        .arg(
+            Arg::new("shell")
+                .long("shell")
+                .short('s')
+                .help("Shell type (bash, zsh, nu)")
+                .value_parser(clap::value_parser!(Shell)),
+        )
 }
 
 fn releases_completions_command() -> Command {
@@ -193,10 +227,34 @@ fn alphas_command() -> Command {
         .subcommand(alphas_install_command())
         .subcommand(alphas_reinstall_command())
         .subcommand(alphas_uninstall_command())
+        .subcommand(alphas_use_command())
         .subcommand(alphas_cp_etc_file_command())
         .subcommand(alphas_prune_command())
         .subcommand(alphas_clean_command())
         .subcommand(alphas_completions_command())
+}
+
+fn alphas_use_command() -> Command {
+    Command::new("use")
+        .about("Output shell commands to use a specific alpha version")
+        .long_about(
+            "Output shell commands to use a specific alpha version.\n\n\
+            Use 'latest' to select the most recent installed alpha version.\n\n\
+            bash/zsh: eval \"$(frm alphas use [version])\"\n\
+            nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Alpha version to use (e.g., 4.3.0-alpha.132057c7 or 'latest')")
+                .index(1),
+        )
+        .arg(
+            Arg::new("shell")
+                .long("shell")
+                .short('s')
+                .help("Shell type (bash, zsh, nu)")
+                .value_parser(clap::value_parser!(Shell)),
+        )
 }
 
 fn alphas_completions_command() -> Command {
@@ -336,9 +394,33 @@ fn alphas_clean_command() -> Command {
 
 fn tanzu_command() -> Command {
     Command::new("tanzu")
-        .about("Install Tanzu RabbitMQ from local tarballs")
+        .about("Install and manage Tanzu RabbitMQ from local tarballs")
         .arg_required_else_help(true)
         .subcommand(tanzu_install_command())
+        .subcommand(tanzu_use_command())
+}
+
+fn tanzu_use_command() -> Command {
+    Command::new("use")
+        .about("Output shell commands to use a specific Tanzu RabbitMQ version")
+        .long_about(
+            "Output shell commands to use a specific Tanzu RabbitMQ version.\n\n\
+            Use 'latest' to select the most recent installed GA version.\n\n\
+            bash/zsh: eval \"$(frm tanzu use [version])\"\n\
+            nushell:  Use 'frm shell env nu' init script, then call 'frm-use [version]'",
+        )
+        .arg(
+            Arg::new("version")
+                .help("Version to use (e.g., 4.2.3 or 'latest')")
+                .index(1),
+        )
+        .arg(
+            Arg::new("shell")
+                .long("shell")
+                .short('s')
+                .help("Shell type (bash, zsh, nu)")
+                .value_parser(clap::value_parser!(Shell)),
+        )
 }
 
 fn tanzu_install_command() -> Command {
@@ -428,29 +510,6 @@ fn conf_set_key_command() -> Command {
                 .short('f')
                 .help("Set the key even if it's not recognized")
                 .action(ArgAction::SetTrue),
-        )
-}
-
-fn use_command() -> Command {
-    Command::new("use")
-        .about("Output shell commands to use a specific version")
-        .long_about(
-            "Output shell commands to use a specific version.\n\n\
-            Use 'latest' to select the most recent installed GA version.\n\n\
-            bash/zsh: eval \"$(frm use [version])\"\n\
-            nushell:  Use 'frm env nu' init script, then call 'frm-use [version]'",
-        )
-        .arg(
-            Arg::new("version")
-                .help("Version to use (e.g., 4.2.3 or 'latest')")
-                .index(1),
-        )
-        .arg(
-            Arg::new("shell")
-                .long("shell")
-                .short('s')
-                .help("Shell type (bash, zsh, nu)")
-                .value_parser(clap::value_parser!(Shell)),
         )
 }
 

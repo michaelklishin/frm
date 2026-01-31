@@ -69,6 +69,12 @@ pub enum Error {
     #[error("expected a non-alpha version, got: {0}")]
     ExpectedNonAlphaVersion(Version),
 
+    #[error("this command only supports release versions")]
+    AlphaVersionNotSupported,
+
+    #[error("this command only supports alpha versions")]
+    ReleaseVersionNotSupported,
+
     #[error("no alpha releases found")]
     NoAlphaReleasesFound,
 
@@ -109,6 +115,8 @@ impl ExitCodeProvider for Error {
             Error::Json(_) => ExitCode::DataErr,
             Error::ExpectedAlphaVersion(_) => ExitCode::Usage,
             Error::ExpectedNonAlphaVersion(_) => ExitCode::Usage,
+            Error::AlphaVersionNotSupported => ExitCode::Usage,
+            Error::ReleaseVersionNotSupported => ExitCode::Usage,
             Error::NoAlphaReleasesFound => ExitCode::NoInput,
             Error::NoGAVersionsInstalled => ExitCode::NoInput,
             Error::NoAlphaVersionsInstalled => ExitCode::NoInput,

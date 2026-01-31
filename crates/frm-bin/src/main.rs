@@ -60,6 +60,8 @@ async fn main() {
     };
 
     let result = match matches.subcommand() {
+        Some(("status", _)) => commands::status(&paths),
+
         Some(("releases", sub)) => match sub.subcommand() {
             Some(("list", _)) => commands::list_releases(&paths),
             Some(("completions", completions_sub)) => {
@@ -156,6 +158,15 @@ async fn main() {
                     Err(e) => Err(e),
                 }
             }
+            Some(("use", use_sub)) => {
+                let version_arg = use_sub.get_one::<String>("version");
+                let shell = use_sub.get_one::<Shell>("shell").copied();
+
+                match resolve_version(&paths, version_arg) {
+                    Ok(version) => commands::use_release_version(&paths, &version, shell),
+                    Err(e) => Err(e),
+                }
+            }
             _ => Ok(()),
         },
 
@@ -213,6 +224,15 @@ async fn main() {
 
                 match resolve_alpha_version(&paths, version_arg) {
                     Ok(version) => commands::uninstall_alpha(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("use", use_sub)) => {
+                let version_arg = use_sub.get_one::<String>("version");
+                let shell = use_sub.get_one::<Shell>("shell").copied();
+
+                match resolve_alpha_version(&paths, version_arg) {
+                    Ok(version) => commands::use_alpha_version(&paths, &version, shell),
                     Err(e) => Err(e),
                 }
             }
@@ -276,6 +296,15 @@ async fn main() {
                     Err(e) => Err(e.into()),
                 }
             }
+            Some(("use", use_sub)) => {
+                let version_arg = use_sub.get_one::<String>("version");
+                let shell = use_sub.get_one::<Shell>("shell").copied();
+
+                match resolve_version(&paths, version_arg) {
+                    Ok(version) => commands::use_release_version(&paths, &version, shell),
+                    Err(e) => Err(e),
+                }
+            }
             _ => Ok(()),
         },
 
@@ -302,16 +331,6 @@ async fn main() {
             }
             _ => Ok(()),
         },
-
-        Some(("use", sub)) => {
-            let version_arg = sub.get_one::<String>("version");
-            let shell = sub.get_one::<Shell>("shell").copied();
-
-            match resolve_version(&paths, version_arg) {
-                Ok(version) => commands::use_version(&paths, &version, shell),
-                Err(e) => Err(e),
-            }
-        }
 
         Some(("default", sub)) => {
             let version_arg = sub.get_one::<String>("version");

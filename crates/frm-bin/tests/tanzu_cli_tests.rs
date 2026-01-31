@@ -363,7 +363,7 @@ fn cli_tanzu_install_records_timestamp() {
 }
 
 #[test]
-fn cli_tanzu_install_usable_with_frm_use() {
+fn cli_tanzu_use_installed() {
     let temp = TempDir::new().unwrap();
     let tarball = create_test_tarball(
         &temp,
@@ -384,11 +384,58 @@ fn cli_tanzu_install_usable_with_frm_use() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "4.2.3", "--shell", "bash"])
+        .args(["tanzu", "use", "4.2.3", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("export PATH="))
         .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_tanzu_use_not_installed() {
+    let temp = TempDir::new().unwrap();
+    frm_cmd_with_dir(&temp)
+        .args(["tanzu", "use", "4.2.3"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not installed"));
+}
+
+#[test]
+fn cli_tanzu_use_latest() {
+    let temp = TempDir::new().unwrap();
+    let tarball = create_test_tarball(
+        &temp,
+        "tanzu-rabbitmq-aarch64-4.2.3.tar.gz",
+        "rabbitmq_server-4.2.3",
+    );
+
+    frm_cmd_with_dir(&temp)
+        .args([
+            "tanzu",
+            "install",
+            "--local-tanzu-rabbitmq-tarball-path",
+            tarball.to_str().unwrap(),
+            "--version",
+            "4.2.3",
+        ])
+        .assert()
+        .success();
+
+    frm_cmd_with_dir(&temp)
+        .args(["tanzu", "use", "latest", "--shell", "bash"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("4.2.3"));
+}
+
+#[test]
+fn cli_tanzu_use_help() {
+    frm_cmd()
+        .args(["tanzu", "use", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("latest"));
 }
 
 #[test]

@@ -4,7 +4,8 @@
 
 ### Enhancements
 
- * (none)
+ * New command `status` shows active, default, and installed versions
+ * New commands `releases use`, `alphas use`, and `tanzu use` replace the top-level `use` command
 
 
 ## v0.12.0 (Jan 31, 2026)

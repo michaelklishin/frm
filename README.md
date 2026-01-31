@@ -30,11 +30,11 @@ Frakking RabbitMQ version Manager
 Usage: frm [COMMAND]
 
 Commands:
+  status       Show frm status: active version, default, installed versions
   releases     Install or manage RabbitMQ releases (GA, RCs, betas); for alphas, see the 'alphas' command group
   alphas       Install, manage, rotate alpha RabbitMQ releases
-  tanzu        Install Tanzu RabbitMQ from local tarballs
+  tanzu        Install and manage Tanzu RabbitMQ from local tarballs
   conf         Manage RabbitMQ configuration files
-  use          Output shell commands to use a specific version
   default      Set the default RabbitMQ version
   cli          Run a RabbitMQ CLI tool
   fg           Run RabbitMQ nodes in foreground
@@ -122,10 +122,10 @@ frm alphas clean --older-than "2 weeks ago"
 
 ```shell
 # bash/zsh
-eval "$(frm use 4.2.3)"
+eval "$(frm releases use 4.2.3)"
 
 # Use the latest installed GA version
-eval "$(frm use latest)"
+eval "$(frm releases use latest)"
 ```
 
 ### Set Default Version

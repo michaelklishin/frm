@@ -51,6 +51,12 @@ fn end_to_end_releases_install_and_list() {
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
+
+    frm_cmd_with_dir(&temp)
+        .args(["status"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(TEST_GA_VERSION));
 }
 
 #[test]
@@ -164,11 +170,11 @@ fn end_to_end_releases_reinstall() {
 }
 
 // ============================================================================
-// use command
+// releases use command
 // ============================================================================
 
 #[test]
-fn end_to_end_use_installed_version() {
+fn end_to_end_releases_use_installed_version() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -177,7 +183,7 @@ fn end_to_end_use_installed_version() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", TEST_GA_VERSION, "--shell", "bash"])
+        .args(["releases", "use", TEST_GA_VERSION, "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains("export PATH="))
@@ -185,7 +191,7 @@ fn end_to_end_use_installed_version() {
 }
 
 #[test]
-fn end_to_end_use_latest() {
+fn end_to_end_releases_use_latest() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -199,7 +205,7 @@ fn end_to_end_use_latest() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
@@ -478,7 +484,17 @@ fn end_to_end_full_workflow() {
         )));
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["status"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(format!(
+            "Default: {}",
+            TEST_GA_VERSION
+        )))
+        .stdout(predicate::str::contains(TEST_GA_VERSION_2));
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
@@ -637,13 +653,13 @@ fn end_to_end_scenario_version_switching() {
         .success();
 
     frm_cmd_with_dir(&temp)
-        .args(["use", TEST_GA_VERSION_2, "--shell", "bash"])
+        .args(["releases", "use", TEST_GA_VERSION_2, "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION_2));
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
@@ -793,7 +809,14 @@ fn end_to_end_scenario_mixed_releases_and_alphas() {
         .stdout(predicate::str::contains("alpha"));
 
     frm_cmd_with_dir(&temp)
-        .args(["use", "latest", "--shell", "bash"])
+        .args(["status"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(TEST_GA_VERSION))
+        .stdout(predicate::str::contains("alpha"));
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "use", "latest", "--shell", "bash"])
         .assert()
         .success()
         .stdout(predicate::str::contains(TEST_GA_VERSION));
