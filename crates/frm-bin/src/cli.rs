@@ -10,7 +10,8 @@ use clap::{Arg, ArgAction, Command};
 
 pub use bel7_cli::CompletionShell;
 
-use crate::commands::{CONFIG_FILES, EtcFile, RABBITMQ_TOOLS};
+use crate::commands::{CONFIG_FILES, EtcFile};
+use crate::common::cli_tools::RABBITMQ_CLI_TOOLS;
 use crate::shell::Shell;
 
 pub fn build_cli() -> Command {
@@ -29,6 +30,7 @@ pub fn build_cli() -> Command {
         .subcommand(default_command())
         .subcommand(cli_command())
         .subcommand(fg_command())
+        .subcommand(bg_command())
         .subcommand(inspect_command())
         .subcommand(shell_command())
 }
@@ -55,6 +57,7 @@ fn releases_command() -> Command {
         .subcommand(releases_uninstall_command())
         .subcommand(releases_use_command())
         .subcommand(releases_cp_etc_file_command())
+        .subcommand(releases_check_signature_command())
         .subcommand(releases_completions_command())
 }
 
@@ -175,6 +178,18 @@ fn releases_uninstall_command() -> Command {
 
 fn releases_cp_etc_file_command() -> Command {
     cp_etc_file_command("Copy a configuration file to a stable release's etc/rabbitmq directory")
+}
+
+fn releases_check_signature_command() -> Command {
+    Command::new("check-signature")
+        .about("Verify the GPG signature of an installed release")
+        .long_about(
+            "Verify the GPG signature of an installed release.\n\n\
+            Downloads the signature file from GitHub and verifies it using GPG.\n\
+            Requires gpg to be installed and available in PATH.\n\n\
+            Note: Alpha versions are not signed and cannot be verified.",
+        )
+        .arg(version_arg())
 }
 
 fn alphas_cp_etc_file_command() -> Command {
@@ -551,7 +566,7 @@ fn cli_command() -> Command {
             Available tools: {}\n\n\
             Use -- to separate tool arguments from frm options:\n\
             frm cli rabbitmqctl -V 4.2.3 -- status",
-            RABBITMQ_TOOLS.join(", ")
+            RABBITMQ_CLI_TOOLS.join(", ")
         ))
         .trailing_var_arg(true)
         .arg(Arg::new("tool").help("Tool to run").required(true).index(1))
@@ -571,6 +586,22 @@ fn fg_command() -> Command {
         .subcommand(
             Command::new("node")
                 .about("Start RabbitMQ server in foreground")
+                .arg(version_arg()),
+        )
+}
+
+fn bg_command() -> Command {
+    Command::new("bg")
+        .about("Start and stop RabbitMQ nodes in background")
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("start")
+                .about("Start RabbitMQ server in background (detached)")
+                .arg(version_arg()),
+        )
+        .subcommand(
+            Command::new("stop")
+                .about("Stop a running RabbitMQ node")
                 .arg(version_arg()),
         )
 }

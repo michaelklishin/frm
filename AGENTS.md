@@ -17,6 +17,7 @@ This is a Rust workspace with three crates:
  * `main.rs`: entry point
  * `cli.rs`: `clap`-based CLI parser
  * `commands/`: command handlers (install, uninstall, list, conf, etc.)
+ * `common/`: a shared internal library (with submodules: `cli_tools`, `env_vars`, `http`, `urls`)
  * `paths.rs`: internal directory structure and operations
  * `download.rs`: download and extraction of the generic binary builds
  * `releases.rs`: GitHub releases API integration
@@ -61,7 +62,7 @@ cargo nextest run -E "test(test_name)"
 
 ## Rust Code Style
 
- * Use top-level `use` statements (imports) to fully-qualified names, e.g. `Display` or `fmt::Display` with a `use` statement, to `std::fmt::Display`
+ * Prefer top-level `use` statements (imports) over fully-qualified names, e.g. `Display` or `fmt::Display` with a `use` statement, over `std::fmt::Display`
  * Never use function-local `use` statements (imports)
  * Add tests to the modules under `tests`, never in the implementation files
  * At the end of each task, run `cargo fmt --all`

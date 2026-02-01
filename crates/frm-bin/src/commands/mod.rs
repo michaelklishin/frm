@@ -6,6 +6,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+mod bg_start;
+mod bg_stop;
+mod check_signature;
 mod clean;
 mod cli_cmd;
 mod completions;
@@ -16,7 +19,7 @@ mod env;
 mod fg_node;
 mod install;
 mod list;
-mod logs;
+pub mod logs;
 mod path;
 mod prune;
 mod reinstall;
@@ -26,8 +29,10 @@ mod tanzu_install;
 mod uninstall;
 mod use_cmd;
 
+pub use bg_start::run as bg_start;
+pub use bg_stop::run as bg_stop;
+pub use check_signature::run as check_signature;
 pub use clean::run as clean_alphas;
-pub use cli_cmd::RABBITMQ_TOOLS;
 pub use cli_cmd::run as cli;
 pub use completions::run as completions;
 pub use conf::get_key as conf_get_key;

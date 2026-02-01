@@ -11,11 +11,10 @@ use std::io::{self, BufRead, BufReader};
 use std::path::PathBuf;
 
 use crate::Result;
+use crate::common::cli_tools::LOG_FILE_PREFIX;
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::version::Version;
-
-const LOG_FILE_PATTERN: &str = "rabbit@";
 
 pub fn path_release(paths: &Paths, version: &Version) -> Result<()> {
     if version.is_distributed_via_server_packages_repository() {
@@ -75,7 +74,7 @@ fn tail(paths: &Paths, version: &Version, lines: usize) -> Result<()> {
     Ok(())
 }
 
-fn find_log_file(paths: &Paths, version: &Version) -> Result<PathBuf> {
+pub fn find_log_file(paths: &Paths, version: &Version) -> Result<PathBuf> {
     let log_dir = paths.version_var_log_dir(version);
 
     if !log_dir.exists() {
@@ -89,7 +88,7 @@ fn find_log_file(paths: &Paths, version: &Version) -> Result<PathBuf> {
         let entry = entry?;
         let file_name = entry.file_name();
         let name = file_name.to_string_lossy();
-        if name.starts_with(LOG_FILE_PATTERN) && name.ends_with(".log") {
+        if name.starts_with(LOG_FILE_PREFIX) && name.ends_with(".log") {
             return Ok(entry.path());
         }
     }

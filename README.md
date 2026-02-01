@@ -39,6 +39,7 @@ Commands:
   default   Set the default RabbitMQ version
   cli       Run a RabbitMQ CLI tool
   fg        Run RabbitMQ nodes in foreground
+  bg        Start and stop RabbitMQ nodes in background
   inspect   Inspect a RabbitMQ configuration file
   shell     Shell-related operations
   help      Print this message or the help of the given subcommand(s)
@@ -165,6 +166,24 @@ frm cli rabbitmqctl -V 4.2.3 -- status
 
 ```shell
 frm fg node -V 4.2.3
+```
+
+### Start RabbitMQ in Background
+
+```shell
+frm bg start -V 4.2.3
+```
+
+### Stop a Background RabbitMQ Node
+
+```shell
+frm bg stop -V 4.2.3
+```
+
+### Verify Release Signature
+
+```shell
+frm releases check-signature -V 4.2.3
 ```
 
 ### Inspect Configuration Files

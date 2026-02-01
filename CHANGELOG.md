@@ -4,7 +4,15 @@
 
 ### Enhancements
 
- * Further release automation improvements
+ * New command group, `bg`, with `start` and `stop` subcommands for running RabbitMQ nodes in the background using `sbin/rabbitmq-server -detached`, `rabbitmqctl shutdown`
+ * `releases check-signature` is a new command that verifies GPG signatures of installed releases
+
+### Internal Changes
+
+Some internal changes worth mentioning:
+ 
+ * Significant refactoring to extract several shared modules under `frm::common::*`
+ * Significant release automation improvements
 
 
 ## v0.14.0 (Jan 31, 2026)

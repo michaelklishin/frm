@@ -9,14 +9,10 @@
 use serde::Deserialize;
 
 use crate::Result;
+use crate::common::http::USER_AGENT;
+use crate::common::urls::{RABBITMQ_SERVER_API_URL, SERVER_PACKAGES_API_URL};
 use crate::errors::Error;
 use crate::version::Version;
-
-const SERVER_PACKAGES_API_URL: &str =
-    "https://api.github.com/repos/rabbitmq/server-packages/releases";
-
-const RABBITMQ_SERVER_API_URL: &str =
-    "https://api.github.com/repos/rabbitmq/rabbitmq-server/releases";
 
 #[derive(Debug, Deserialize)]
 pub struct GitHubRelease {
@@ -40,7 +36,7 @@ pub async fn find_server_packages_release_tag(
     let releases: Vec<GitHubRelease> = client
         .get(SERVER_PACKAGES_API_URL)
         .query(&[("per_page", "100")])
-        .header("User-Agent", "frm")
+        .header("User-Agent", USER_AGENT)
         .send()
         .await?
         .json()
@@ -59,7 +55,7 @@ pub async fn fetch_alpha_releases(client: &reqwest::Client) -> Result<Vec<AlphaR
     let releases: Vec<GitHubRelease> = client
         .get(SERVER_PACKAGES_API_URL)
         .query(&[("per_page", "100")])
-        .header("User-Agent", "frm")
+        .header("User-Agent", USER_AGENT)
         .send()
         .await?
         .json()
@@ -106,7 +102,7 @@ pub async fn find_latest_ga_release(client: &reqwest::Client) -> Result<Version>
     let releases: Vec<GitHubRelease> = client
         .get(RABBITMQ_SERVER_API_URL)
         .query(&[("per_page", "50")])
-        .header("User-Agent", "frm")
+        .header("User-Agent", USER_AGENT)
         .send()
         .await?
         .json()

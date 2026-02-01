@@ -11,6 +11,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::Result;
+use crate::common::env_vars::FRM_DIR;
 use crate::errors::Error;
 use crate::version::Version;
 
@@ -30,7 +31,7 @@ impl Paths {
     }
 
     fn detect_base_dir() -> Result<PathBuf> {
-        if let Ok(dir) = env::var("FRM_DIR") {
+        if let Ok(dir) = env::var(FRM_DIR) {
             return Ok(PathBuf::from(dir));
         }
 

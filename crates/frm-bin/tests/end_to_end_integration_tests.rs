@@ -20,6 +20,7 @@ const TEST_GA_VERSION_2: &str = "4.0.4";
 fn frm_cmd_with_dir(dir: &TempDir) -> Command {
     let mut cmd = Command::cargo_bin("frm").unwrap();
     cmd.env("FRM_DIR", dir.path());
+    cmd.env_remove("GITHUB_TOKEN");
     cmd.timeout(std::time::Duration::from_secs(300));
     cmd
 }

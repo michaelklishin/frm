@@ -13,11 +13,10 @@ use std::process;
 use std::process::Command;
 
 use crate::Result;
+use crate::common::cli_tools::RABBITMQ_SERVER;
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::version::Version;
-
-const RABBITMQ_SERVER: &str = "rabbitmq-server";
 
 #[cfg(unix)]
 pub fn run(paths: &Paths, version: &Version) -> Result<()> {

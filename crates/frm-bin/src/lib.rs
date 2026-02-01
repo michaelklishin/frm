@@ -12,6 +12,7 @@
 
 pub mod cli;
 pub mod commands;
+pub mod common;
 pub mod config;
 pub mod download;
 pub mod errors;

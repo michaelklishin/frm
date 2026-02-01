@@ -92,6 +92,9 @@ pub enum Error {
         expected: Version,
         detected: Version,
     },
+
+    #[error("signature verification failed: {0}")]
+    SignatureVerificationFailed(String),
 }
 
 impl ExitCodeProvider for Error {
@@ -122,6 +125,7 @@ impl ExitCodeProvider for Error {
             Error::NoAlphaVersionsInstalled => ExitCode::NoInput,
             Error::InvalidDateTime(_) => ExitCode::Usage,
             Error::TanzuVersionMismatch { .. } => ExitCode::DataErr,
+            Error::SignatureVerificationFailed(_) => ExitCode::DataErr,
         }
     }
 }

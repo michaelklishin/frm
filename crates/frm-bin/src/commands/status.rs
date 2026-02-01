@@ -10,6 +10,7 @@ use std::env;
 use std::io::{self, Write};
 
 use crate::Result;
+use crate::common::env_vars::RABBITMQ_HOME;
 use crate::config::Config;
 use crate::paths::Paths;
 use crate::version::Version;
@@ -100,7 +101,7 @@ impl Status {
 }
 
 fn detect_active_version(paths: &Paths) -> Option<Version> {
-    let rabbitmq_home = env::var("RABBITMQ_HOME").ok()?;
+    let rabbitmq_home = env::var(RABBITMQ_HOME).ok()?;
     let versions_dir = paths.versions_dir();
     let versions_prefix = versions_dir.to_string_lossy();
 

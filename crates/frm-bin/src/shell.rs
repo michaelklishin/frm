@@ -12,6 +12,7 @@ use std::str::FromStr;
 
 use clap::ValueEnum;
 
+use crate::common::env_vars::FRM_SHELL;
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::version::Version;
@@ -33,7 +34,7 @@ const INIT_NU_TEMPLATE: &str = include_str!("../shells/init/nu.template");
 
 impl Shell {
     pub fn detect() -> Option<Self> {
-        if let Ok(shell) = env::var("FRM_SHELL") {
+        if let Ok(shell) = env::var(FRM_SHELL) {
             return shell.parse().ok();
         }
 

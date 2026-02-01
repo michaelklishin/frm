@@ -13,18 +13,10 @@ use std::process;
 use std::process::Command;
 
 use crate::Result;
+use crate::common::cli_tools::RABBITMQ_CLI_TOOLS;
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::version::Version;
-
-pub const RABBITMQ_TOOLS: &[&str] = &[
-    "rabbitmqctl",
-    "rabbitmq-diagnostics",
-    "rabbitmq-plugins",
-    "rabbitmq-queues",
-    "rabbitmq-streams",
-    "rabbitmq-upgrade",
-];
 
 #[cfg(unix)]
 pub fn run(paths: &Paths, version: &Version, tool: &str, args: &[String]) -> Result<()> {
@@ -32,11 +24,11 @@ pub fn run(paths: &Paths, version: &Version, tool: &str, args: &[String]) -> Res
         return Err(Error::VersionNotInstalled(version.clone()));
     }
 
-    if !RABBITMQ_TOOLS.contains(&tool) {
+    if !RABBITMQ_CLI_TOOLS.contains(&tool) {
         return Err(Error::UnknownTool(format!(
             "'{}'. Valid tools: {}",
             tool,
-            RABBITMQ_TOOLS.join(", ")
+            RABBITMQ_CLI_TOOLS.join(", ")
         )));
     }
 
@@ -60,11 +52,11 @@ pub fn run(paths: &Paths, version: &Version, tool: &str, args: &[String]) -> Res
         return Err(Error::VersionNotInstalled(version.clone()));
     }
 
-    if !RABBITMQ_TOOLS.contains(&tool) {
+    if !RABBITMQ_CLI_TOOLS.contains(&tool) {
         return Err(Error::UnknownTool(format!(
             "'{}'. Valid tools: {}",
             tool,
-            RABBITMQ_TOOLS.join(", ")
+            RABBITMQ_CLI_TOOLS.join(", ")
         )));
     }
 

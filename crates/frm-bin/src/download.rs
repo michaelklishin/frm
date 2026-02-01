@@ -16,6 +16,7 @@ use tar::Archive;
 use xz2::read::XzDecoder;
 
 use crate::Result;
+use crate::common::http::USER_AGENT;
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::releases::find_server_packages_release_tag;
@@ -62,6 +63,7 @@ impl Downloader {
         let response = self
             .client
             .get(url)
+            .header("User-Agent", USER_AGENT)
             .send()
             .await
             .map_err(|e| Error::DownloadFailed(e.to_string()))?;

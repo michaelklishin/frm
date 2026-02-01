@@ -167,6 +167,14 @@ async fn main() {
                     Err(e) => Err(e),
                 }
             }
+            Some(("check-signature", check_sub)) => {
+                let version_arg = check_sub.get_one::<String>("version");
+
+                match resolve_version(&paths, version_arg) {
+                    Ok(version) => commands::check_signature(&paths, &version).await,
+                    Err(e) => Err(e),
+                }
+            }
             _ => Ok(()),
         },
 
@@ -357,6 +365,26 @@ async fn main() {
 
                 match resolve_version(&paths, version_arg) {
                     Ok(version) => commands::fg_node(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            _ => Ok(()),
+        },
+
+        Some(("bg", sub)) => match sub.subcommand() {
+            Some(("start", start_sub)) => {
+                let version_arg = start_sub.get_one::<String>("version");
+
+                match resolve_version(&paths, version_arg) {
+                    Ok(version) => commands::bg_start(&paths, &version),
+                    Err(e) => Err(e),
+                }
+            }
+            Some(("stop", stop_sub)) => {
+                let version_arg = stop_sub.get_one::<String>("version");
+
+                match resolve_version(&paths, version_arg) {
+                    Ok(version) => commands::bg_stop(&paths, &version),
                     Err(e) => Err(e),
                 }
             }

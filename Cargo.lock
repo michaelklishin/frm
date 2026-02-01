@@ -525,6 +525,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "tabled",
  "tar",
  "tempfile",
  "thiserror 2.0.18",
