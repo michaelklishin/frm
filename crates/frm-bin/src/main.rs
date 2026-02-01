@@ -7,7 +7,6 @@
 // except according to those terms.
 
 use std::path::PathBuf;
-use std::process;
 
 use bel7_cli::{ExitCode, ExitCodeProvider, print_error, print_info};
 
@@ -48,14 +47,14 @@ fn resolve_alpha_version(paths: &Paths, version_arg: Option<&String>) -> Result<
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> ExitCode {
     let matches = build_cli().get_matches();
 
     let paths = match Paths::new() {
         Ok(p) => p,
         Err(e) => {
             print_error(e.to_string());
-            process::exit(ExitCode::Config as i32);
+            return ExitCode::Config;
         }
     };
 
@@ -420,10 +419,10 @@ async fn main() {
     };
 
     match result {
-        Ok(()) => process::exit(ExitCode::Ok as i32),
+        Ok(()) => ExitCode::Ok,
         Err(e) => {
             print_error(e.to_string());
-            process::exit(e.exit_code() as i32);
+            e.exit_code()
         }
     }
 }
