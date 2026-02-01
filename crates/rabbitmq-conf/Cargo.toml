@@ -17,8 +17,8 @@ thiserror = "2.0"
 winnow = "0.7"
 
 [dev-dependencies]
-proptest = "1.6"
-tempfile = "3.19"
+proptest = "1.9"
+tempfile = "3.24"
 
 [lints]
 workspace = true
