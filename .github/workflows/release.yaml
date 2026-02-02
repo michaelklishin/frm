@@ -349,9 +349,6 @@ jobs:
           notes-file: artifacts/release-notes/release_notes.md
           include-checksums: 'true'
           include-signatures: 'true'
-          homebrew-tap: 'michaelklishin/homebrew-frm/frm'
-          aur-package: 'frm'
-          winget-id: 'MichaelKlishin.frm'
 
       - name: Copy generated files to release
         run: |
