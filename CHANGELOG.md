@@ -1,5 +1,10 @@
 # frm Changelog
 
+## v0.18.0 (in development)
+
+No changes yet.
+
+
 ## v0.17.0 (Feb 1, 2026)
 
 ### Enhancements
