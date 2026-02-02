@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   validate:
@@ -17,27 +18,49 @@ jobs:
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - uses: michaelklishin/rust-release-action@v1.3.0
+      - name: Validate version
+        uses: michaelklishin/rust-release-action@v1.9.0
         id: validate
         with:
           command: validate-version
           expected-version: ${{ vars.NEXT_RELEASE_VERSION }}
           validate-cargo-toml: 'true'
 
-      - uses: michaelklishin/rust-release-action@v1.3.0
+      - name: Validate changelog
+        uses: michaelklishin/rust-release-action@v1.9.0
         with:
           command: validate-changelog
 
-      - uses: michaelklishin/rust-release-action@v1.3.0
+      - name: Extract changelog
+        uses: michaelklishin/rust-release-action@v1.9.0
         with:
           command: extract-changelog
 
-      - uses: actions/upload-artifact@v4
+      - name: Generate SBOM
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: sbom
+        with:
+          command: generate-sbom
+          package: frm-bin
+          binary-name: frm
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: release_notes.md
+          retention-days: 2
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            ${{ steps.sbom.outputs.sbom_spdx }}
+            ${{ steps.sbom.outputs.sbom_cyclonedx }}
           retention-days: 2
 
   build:
@@ -63,17 +86,20 @@ jobs:
           - target: aarch64-unknown-linux-musl
             os: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
       - name: Free up disk space
         if: contains(matrix.os, 'ubuntu')
         run: .github/scripts/free_disk_space.sh
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      - uses: michaelklishin/rust-release-action@v1.3.0
+      - name: Build binary
+        uses: michaelklishin/rust-release-action@v1.9.0
         id: build
         with:
           command: release
@@ -83,12 +109,155 @@ jobs:
           locked: 'true'
           checksum: 'sha256'
 
-      - uses: actions/upload-artifact@v4
+      - name: Build DEB package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: deb
+        with:
+          command: release-linux-deb
+          target: ${{ matrix.target }}
+          package: frm-bin
+          binary-name: frm
+          skip-build: 'true'
+          binary-path: ${{ steps.build.outputs.binary_path }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-maintainer: 'Michael Klishin <michael@michaelklishin.com>'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+
+      - name: Build RPM package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: rpm
+        with:
+          command: release-linux-rpm
+          target: ${{ matrix.target }}
+          package: frm-bin
+          binary-name: frm
+          skip-build: 'true'
+          binary-path: ${{ steps.build.outputs.binary_path }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-maintainer: 'Michael Klishin <michael@michaelklishin.com>'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+
+      - name: Build DMG installer
+        if: contains(matrix.target, 'apple-darwin')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: dmg
+        with:
+          command: release-macos-dmg
+          target: ${{ matrix.target }}
+          package: frm-bin
+          binary-name: frm
+          skip-build: 'true'
+          binary-path: ${{ steps.build.outputs.binary_path }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+
+      - name: Build MSI installer
+        if: contains(matrix.target, 'windows')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: msi
+        with:
+          command: release-windows-msi
+          target: ${{ matrix.target }}
+          package: frm-bin
+          binary-name: frm
+          skip-build: 'true'
+          binary-path: ${{ steps.build.outputs.binary_path }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+
+      - name: Sign binary
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: sign-artifact
+          artifact: ${{ steps.build.outputs.bare_artifact_path }}
+
+      - name: Sign DEB package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: sign-artifact
+          artifact: ${{ steps.deb.outputs.artifact_path }}
+
+      - name: Sign RPM package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: sign-artifact
+          artifact: ${{ steps.rpm.outputs.artifact_path }}
+
+      - name: Sign DMG installer
+        if: contains(matrix.target, 'apple-darwin')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: sign-artifact
+          artifact: ${{ steps.dmg.outputs.artifact_path }}
+
+      - name: Sign MSI installer
+        if: contains(matrix.target, 'windows')
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: sign-artifact
+          artifact: ${{ steps.msi.outputs.artifact_path }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
           path: |
             ${{ steps.build.outputs.bare_artifact_path }}
             ${{ steps.build.outputs.bare_artifact_path }}.sha256
+            ${{ steps.build.outputs.bare_artifact_path }}.sig
+            ${{ steps.build.outputs.bare_artifact_path }}.sigstore.json
+          retention-days: 2
+
+      - name: Upload DEB package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-deb
+          path: |
+            ${{ steps.deb.outputs.artifact_path }}
+            ${{ steps.deb.outputs.artifact_path }}.sig
+            ${{ steps.deb.outputs.artifact_path }}.sigstore.json
+          retention-days: 2
+
+      - name: Upload RPM package
+        if: contains(matrix.target, 'linux-gnu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-rpm
+          path: |
+            ${{ steps.rpm.outputs.artifact_path }}
+            ${{ steps.rpm.outputs.artifact_path }}.sig
+            ${{ steps.rpm.outputs.artifact_path }}.sigstore.json
+          retention-days: 2
+
+      - name: Upload DMG installer
+        if: contains(matrix.target, 'apple-darwin')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-dmg
+          path: |
+            ${{ steps.dmg.outputs.artifact_path }}
+            ${{ steps.dmg.outputs.artifact_path }}.sig
+            ${{ steps.dmg.outputs.artifact_path }}.sigstore.json
+          retention-days: 2
+
+      - name: Upload MSI installer
+        if: contains(matrix.target, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-msi
+          path: |
+            ${{ steps.msi.outputs.artifact_path }}
+            ${{ steps.msi.outputs.artifact_path }}.sig
+            ${{ steps.msi.outputs.artifact_path }}.sigstore.json
           retention-days: 2
 
   release:
@@ -96,16 +265,18 @@ jobs:
     needs: [validate, build]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
       - name: Collect release files
         run: |
           mkdir -p release
-          find artifacts -type f \( -name "frm-*" -o -name "*.sha256" \) ! -name "release_notes.md" -exec cp {} release/ \;
+          find artifacts -type f \( -name "frm-*" -o -name "*.sha256" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.msi" -o -name "*.sig" -o -name "*.sigstore.json" -o -name "*.spdx.json" -o -name "*.cdx.json" \) ! -name "release_notes.md" -exec cp {} release/ \;
 
-      - uses: softprops/action-gh-release@v2
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.validate.outputs.version }}
           draft: false

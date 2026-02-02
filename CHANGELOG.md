@@ -1,8 +1,12 @@
 # frm Changelog
 
-## v0.16.0 (in development)
+## v0.16.0 (Feb 1, 2026)
 
-No changes yet.
+### Enhancements
+
+ * Releases now include SBOM artifacts (SPDX and CycloneDX formats)
+ * Releases now include DEB and RPM packages for Linux GNU targets
+ * Release artifacts are now signed with Sigstore
 
 
 ## v0.15.0 (Feb 1, 2026)
