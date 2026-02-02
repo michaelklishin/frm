@@ -1,8 +1,14 @@
 # frm Changelog
 
-## v0.17.0 (in development)
+## v0.17.0 (Feb 1, 2026)
 
-No changes yet.
+### Enhancements
+
+ * Releases now include `.tar.gz` archives (Linux/macOS) and `.zip` archives (Windows) with README and LICENSE files
+ * Releases now include a Homebrew formula for `brew install`
+ * Releases now include an AUR PKGBUILD for Arch Linux
+ * Releases now include a Winget manifest for Windows Package Manager
+ * Releases now include a consolidated SHA256SUMS file
 
 
 ## v0.16.0 (Feb 1, 2026)

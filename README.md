@@ -223,6 +223,13 @@ frm shell completions nushell | save -f ~/.cache/frm/completions.nu
 ```
 
 
+## Installation
+
+Pre-built binaries are available from [GitHub Releases](https://github.com/michaelklishin/frm/releases).
+
+MSI installers are only produced for x86-64 Windows hosts.
+
+
 ## License
 
 Double licensed under the MIT and Apache 2.0 (ASL2) licenses.

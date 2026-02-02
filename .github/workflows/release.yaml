@@ -22,12 +22,12 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Validate changelog
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: validate-changelog
 
       - name: Validate version
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: validate
         with:
           command: validate-version
@@ -35,12 +35,12 @@ jobs:
           validate-cargo-toml: 'true'
 
       - name: Extract changelog
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: extract-changelog
 
       - name: Generate SBOM
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: sbom
         with:
           command: generate-sbom
@@ -73,8 +73,6 @@ jobs:
         include:
           - target: aarch64-apple-darwin
             os: macos-latest
-          - target: x86_64-apple-darwin
-            os: macos-13
           - target: x86_64-pc-windows-msvc
             os: windows-latest
           - target: aarch64-pc-windows-msvc
@@ -101,7 +99,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build archive
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: build
         with:
           command: release
@@ -115,7 +113,7 @@ jobs:
 
       - name: Build DEB package
         if: contains(matrix.target, 'linux-gnu')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: deb
         with:
           command: release-linux-deb
@@ -131,7 +129,7 @@ jobs:
 
       - name: Build RPM package
         if: contains(matrix.target, 'linux-gnu')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: rpm
         with:
           command: release-linux-rpm
@@ -147,7 +145,7 @@ jobs:
 
       - name: Build DMG installer
         if: contains(matrix.target, 'apple-darwin')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: dmg
         with:
           command: release-macos-dmg
@@ -161,8 +159,8 @@ jobs:
           pkg-license: 'MIT'
 
       - name: Build MSI installer
-        if: contains(matrix.target, 'windows')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        uses: michaelklishin/rust-release-action@v1
         id: msi
         with:
           command: release-windows-msi
@@ -176,35 +174,35 @@ jobs:
           pkg-license: 'MIT'
 
       - name: Sign archive
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: sign-artifact
           artifact: ${{ steps.build.outputs.artifact_path }}
 
       - name: Sign DEB package
         if: contains(matrix.target, 'linux-gnu')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: sign-artifact
           artifact: ${{ steps.deb.outputs.artifact_path }}
 
       - name: Sign RPM package
         if: contains(matrix.target, 'linux-gnu')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: sign-artifact
           artifact: ${{ steps.rpm.outputs.artifact_path }}
 
       - name: Sign DMG installer
         if: contains(matrix.target, 'apple-darwin')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: sign-artifact
           artifact: ${{ steps.dmg.outputs.artifact_path }}
 
       - name: Sign MSI installer
-        if: contains(matrix.target, 'windows')
-        uses: michaelklishin/rust-release-action@v1.9.0
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+        uses: michaelklishin/rust-release-action@v1
         with:
           command: sign-artifact
           artifact: ${{ steps.msi.outputs.artifact_path }}
@@ -254,7 +252,7 @@ jobs:
           retention-days: 2
 
       - name: Upload MSI installer
-        if: contains(matrix.target, 'windows')
+        if: matrix.target == 'x86_64-pc-windows-msvc'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-msi
@@ -283,7 +281,7 @@ jobs:
           find artifacts -type f \( -name "frm-*" -o -name "*.sha256" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.msi" -o -name "*.sig" -o -name "*.sigstore.json" -o -name "*.spdx.json" -o -name "*.cdx.json" \) ! -name "release_notes.md" -exec cp {} release/ \;
 
       - name: Collect artifact checksums
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: collect
         with:
           command: collect-artifacts
@@ -292,7 +290,7 @@ jobs:
           base-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}
 
       - name: Generate Homebrew formula
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: homebrew
         with:
           command: generate-homebrew
@@ -303,19 +301,18 @@ jobs:
           pkg-license: 'MIT'
           brew-macos-arm64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-aarch64-apple-darwin.tar.gz
           brew-macos-arm64-sha256: ${{ steps.collect.outputs.macos_arm64_sha256 }}
-          brew-macos-x64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-x86_64-apple-darwin.tar.gz
-          brew-macos-x64-sha256: ${{ steps.collect.outputs.macos_x64_sha256 }}
           brew-linux-arm64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-aarch64-unknown-linux-gnu.tar.gz
           brew-linux-arm64-sha256: ${{ steps.collect.outputs.linux_arm64_sha256 }}
           brew-linux-x64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz
           brew-linux-x64-sha256: ${{ steps.collect.outputs.linux_x64_sha256 }}
 
       - name: Generate AUR PKGBUILD
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: aur
         with:
           command: generate-aur
           binary-name: frm
+          aur-name: frm
           version: ${{ needs.validate.outputs.version }}
           pkg-description: 'RabbitMQ version manager based on generic binary builds'
           pkg-homepage: 'https://github.com/michaelklishin/frm'
@@ -325,11 +322,12 @@ jobs:
           aur-source-sha256: 'SKIP'
 
       - name: Generate Winget manifest
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: winget
         with:
           command: generate-winget
           binary-name: frm
+          winget-package-id: frm
           version: ${{ needs.validate.outputs.version }}
           pkg-description: 'RabbitMQ version manager based on generic binary builds'
           pkg-homepage: 'https://github.com/michaelklishin/frm'
@@ -343,7 +341,7 @@ jobs:
           winget-arm64-sha256: ${{ steps.collect.outputs.windows_arm64_sha256 }}
 
       - name: Format release body
-        uses: michaelklishin/rust-release-action@v1.9.0
+        uses: michaelklishin/rust-release-action@v1
         id: body
         with:
           command: format-release
