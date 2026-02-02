@@ -6,6 +6,7 @@
 
  * Releases now include SBOM artifacts (SPDX and CycloneDX formats)
  * Releases now include DEB and RPM packages for Linux GNU targets
+ * Releases now include DMG installers for macOS and MSI installers for Windows
  * Release artifacts are now signed with Sigstore
 
 
