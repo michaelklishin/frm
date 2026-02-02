@@ -21,6 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Validate changelog
+        uses: michaelklishin/rust-release-action@v1.9.0
+        with:
+          command: validate-changelog
+
       - name: Validate version
         uses: michaelklishin/rust-release-action@v1.9.0
         id: validate
@@ -28,11 +33,6 @@ jobs:
           command: validate-version
           expected-version: ${{ vars.NEXT_RELEASE_VERSION }}
           validate-cargo-toml: 'true'
-
-      - name: Validate changelog
-        uses: michaelklishin/rust-release-action@v1.9.0
-        with:
-          command: validate-changelog
 
       - name: Extract changelog
         uses: michaelklishin/rust-release-action@v1.9.0
@@ -73,6 +73,8 @@ jobs:
         include:
           - target: aarch64-apple-darwin
             os: macos-latest
+          - target: x86_64-apple-darwin
+            os: macos-13
           - target: x86_64-pc-windows-msvc
             os: windows-latest
           - target: aarch64-pc-windows-msvc
@@ -98,7 +100,7 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Build binary
+      - name: Build archive
         uses: michaelklishin/rust-release-action@v1.9.0
         id: build
         with:
@@ -107,7 +109,9 @@ jobs:
           package: frm-bin
           binary-name: frm
           locked: 'true'
+          archive: 'true'
           checksum: 'sha256'
+          include: 'README.md,LICENSE-MIT,LICENSE-APACHE'
 
       - name: Build DEB package
         if: contains(matrix.target, 'linux-gnu')
@@ -171,11 +175,11 @@ jobs:
           pkg-homepage: 'https://github.com/michaelklishin/frm'
           pkg-license: 'MIT'
 
-      - name: Sign binary
+      - name: Sign archive
         uses: michaelklishin/rust-release-action@v1.9.0
         with:
           command: sign-artifact
-          artifact: ${{ steps.build.outputs.bare_artifact_path }}
+          artifact: ${{ steps.build.outputs.artifact_path }}
 
       - name: Sign DEB package
         if: contains(matrix.target, 'linux-gnu')
@@ -205,15 +209,15 @@ jobs:
           command: sign-artifact
           artifact: ${{ steps.msi.outputs.artifact_path }}
 
-      - name: Upload binary
+      - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
           path: |
-            ${{ steps.build.outputs.bare_artifact_path }}
-            ${{ steps.build.outputs.bare_artifact_path }}.sha256
-            ${{ steps.build.outputs.bare_artifact_path }}.sig
-            ${{ steps.build.outputs.bare_artifact_path }}.sigstore.json
+            ${{ steps.build.outputs.artifact_path }}
+            ${{ steps.build.outputs.artifact_path }}.sha256
+            ${{ steps.build.outputs.artifact_path }}.sig
+            ${{ steps.build.outputs.artifact_path }}.sigstore.json
           retention-days: 2
 
       - name: Upload DEB package
@@ -265,6 +269,9 @@ jobs:
     needs: [validate, build]
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -275,12 +282,93 @@ jobs:
           mkdir -p release
           find artifacts -type f \( -name "frm-*" -o -name "*.sha256" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.msi" -o -name "*.sig" -o -name "*.sigstore.json" -o -name "*.spdx.json" -o -name "*.cdx.json" \) ! -name "release_notes.md" -exec cp {} release/ \;
 
+      - name: Collect artifact checksums
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: collect
+        with:
+          command: collect-artifacts
+          binary-name: frm
+          artifacts-dir: release
+          base-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}
+
+      - name: Generate Homebrew formula
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: homebrew
+        with:
+          command: generate-homebrew
+          binary-name: frm
+          version: ${{ needs.validate.outputs.version }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+          brew-macos-arm64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-aarch64-apple-darwin.tar.gz
+          brew-macos-arm64-sha256: ${{ steps.collect.outputs.macos_arm64_sha256 }}
+          brew-macos-x64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-x86_64-apple-darwin.tar.gz
+          brew-macos-x64-sha256: ${{ steps.collect.outputs.macos_x64_sha256 }}
+          brew-linux-arm64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-aarch64-unknown-linux-gnu.tar.gz
+          brew-linux-arm64-sha256: ${{ steps.collect.outputs.linux_arm64_sha256 }}
+          brew-linux-x64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz
+          brew-linux-x64-sha256: ${{ steps.collect.outputs.linux_x64_sha256 }}
+
+      - name: Generate AUR PKGBUILD
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: aur
+        with:
+          command: generate-aur
+          binary-name: frm
+          version: ${{ needs.validate.outputs.version }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+          aur-maintainer: 'Michael Klishin <michael@michaelklishin.com>'
+          aur-source-url: https://github.com/michaelklishin/frm/archive/refs/tags/v${{ needs.validate.outputs.version }}.tar.gz
+          aur-source-sha256: 'SKIP'
+
+      - name: Generate Winget manifest
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: winget
+        with:
+          command: generate-winget
+          binary-name: frm
+          version: ${{ needs.validate.outputs.version }}
+          pkg-description: 'RabbitMQ version manager based on generic binary builds'
+          pkg-homepage: 'https://github.com/michaelklishin/frm'
+          pkg-license: 'MIT'
+          winget-publisher: 'Michael Klishin'
+          winget-license-url: 'https://github.com/michaelklishin/frm/blob/main/LICENSE-MIT'
+          winget-tags: 'rabbitmq,version-manager,cli'
+          winget-x64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-x86_64-pc-windows-msvc.zip
+          winget-x64-sha256: ${{ steps.collect.outputs.windows_x64_sha256 }}
+          winget-arm64-url: https://github.com/michaelklishin/frm/releases/download/v${{ needs.validate.outputs.version }}/frm-${{ needs.validate.outputs.version }}-aarch64-pc-windows-msvc.zip
+          winget-arm64-sha256: ${{ steps.collect.outputs.windows_arm64_sha256 }}
+
+      - name: Format release body
+        uses: michaelklishin/rust-release-action@v1.9.0
+        id: body
+        with:
+          command: format-release
+          artifacts-dir: release
+          notes-file: artifacts/release-notes/release_notes.md
+          include-checksums: 'true'
+          include-signatures: 'true'
+          homebrew-tap: 'michaelklishin/homebrew-frm/frm'
+          aur-package: 'frm'
+          winget-id: 'MichaelKlishin.frm'
+
+      - name: Copy generated files to release
+        run: |
+          cp ${{ steps.collect.outputs.checksums_file }} release/ || true
+          cp ${{ steps.homebrew.outputs.formula_file }} release/ || true
+          cp ${{ steps.aur.outputs.pkgbuild_path }} release/ || true
+          cp ${{ steps.aur.outputs.srcinfo_path }} release/ || true
+          cp -r ${{ steps.winget.outputs.manifest_dir }}/* release/ || true
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.validate.outputs.version }}
           draft: false
-          body_path: artifacts/release-notes/release_notes.md
+          body: ${{ steps.body.outputs.body }}
           files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
