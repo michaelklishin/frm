@@ -2,7 +2,13 @@
 
 ## v0.18.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `frm` nwo uses a [`conf.d`](https://www.rabbitmq.com/docs/configure#config-confd-directory) instead of a single file
+
+ * `fg node` and `bg start` now log to both a file and the standard output by default.
+ 
+   The default logging configuration now lives in `conf.d/90-logging.conf` instead of the default `rabbitmq.conf` template.
 
 
 ## v0.17.0 (Feb 1, 2026)
