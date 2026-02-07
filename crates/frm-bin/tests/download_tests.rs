@@ -40,6 +40,12 @@ fn copy_default_config_no_source() {
     assert!(plugins_path.exists());
     let plugins_content = fs::read_to_string(&plugins_path).unwrap();
     assert!(plugins_content.contains("rabbitmq_management"));
+
+    let logging_conf = paths.version_confd_dir(&version).join("90-logging.conf");
+    assert!(logging_conf.exists());
+    let logging_content = fs::read_to_string(&logging_conf).unwrap();
+    assert!(logging_content.contains("log.file.level"));
+    assert!(logging_content.contains("log.console"));
 }
 
 #[test]
@@ -165,6 +171,57 @@ fn copy_default_config_user_overrides_template() {
     assert_eq!(
         fs::read_to_string(&conf_path).unwrap(),
         "cluster_name = rabbit@custom\n"
+    );
+}
+
+#[test]
+fn copy_default_config_user_confd_overrides_logging() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let version = Version::new(4, 2, 3);
+    fs::create_dir_all(paths.version_dir(&version)).unwrap();
+
+    let user_confd = paths.etc_dir().join("conf.d");
+    fs::create_dir_all(&user_confd).unwrap();
+    fs::write(
+        user_confd.join("90-logging.conf"),
+        "log.file.level = warning\nlog.console = false\n",
+    )
+    .unwrap();
+
+    copy_default_config(&paths, &version).unwrap();
+
+    let logging_conf = paths.version_confd_dir(&version).join("90-logging.conf");
+    let content = fs::read_to_string(logging_conf).unwrap();
+    assert!(content.contains("log.file.level = warning"));
+    assert!(content.contains("log.console = false"));
+}
+
+#[test]
+fn copy_default_config_user_confd_adds_extra_files() {
+    let (_temp, paths) = setup_temp_paths();
+    paths.ensure_dirs().unwrap();
+
+    let version = Version::new(4, 2, 3);
+    fs::create_dir_all(paths.version_dir(&version)).unwrap();
+
+    let user_confd = paths.etc_dir().join("conf.d");
+    fs::create_dir_all(&user_confd).unwrap();
+    fs::write(
+        user_confd.join("50-custom.conf"),
+        "cluster_name = my-cluster\n",
+    )
+    .unwrap();
+
+    copy_default_config(&paths, &version).unwrap();
+
+    let confd_dir = paths.version_confd_dir(&version);
+    assert!(confd_dir.join("90-logging.conf").exists());
+    assert!(confd_dir.join("50-custom.conf").exists());
+    assert_eq!(
+        fs::read_to_string(confd_dir.join("50-custom.conf")).unwrap(),
+        "cluster_name = my-cluster\n"
     );
 }
 

@@ -14,7 +14,7 @@ use tabled::{Table, Tabled};
 use crate::Result;
 use crate::commands::logs::find_log_file;
 use crate::common::cli_tools::RABBITMQ_SERVER;
-use crate::common::env_vars::RABBITMQ_HOME;
+use crate::common::env_vars::{RABBITMQ_CONFIG_FILES, RABBITMQ_HOME};
 use crate::errors::Error;
 use crate::paths::Paths;
 use crate::version::Version;
@@ -40,6 +40,7 @@ pub fn run(paths: &Paths, version: &Version) -> Result<()> {
     let status = Command::new(&server_path)
         .arg("-detached")
         .env(RABBITMQ_HOME, paths.version_dir(version))
+        .env(RABBITMQ_CONFIG_FILES, paths.version_confd_dir(version))
         .status()
         .map_err(|e| {
             Error::CommandFailed(format!(

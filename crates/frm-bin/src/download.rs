@@ -26,6 +26,8 @@ const TEMPLATE_RABBITMQ_CONF: &str =
     include_str!("../templates/etc/rabbitmq/template.rabbitmq.conf");
 const TEMPLATE_ENABLED_PLUGINS: &str =
     include_str!("../templates/etc/rabbitmq/template.enabled_plugins");
+const TEMPLATE_LOGGING_CONF: &str =
+    include_str!("../templates/etc/rabbitmq/conf.d/90-logging.conf");
 
 pub struct Downloader {
     client: reqwest::Client,
@@ -173,6 +175,13 @@ pub fn copy_default_config(paths: &Paths, version: &Version) -> Result<()> {
     let enabled_plugins = etc_dest.join("enabled_plugins");
     if !enabled_plugins.exists() {
         fs::write(&enabled_plugins, TEMPLATE_ENABLED_PLUGINS)?;
+    }
+
+    let confd_dir = paths.version_confd_dir(version);
+    fs::create_dir_all(&confd_dir)?;
+    let logging_conf = confd_dir.join("90-logging.conf");
+    if !logging_conf.exists() {
+        fs::write(&logging_conf, TEMPLATE_LOGGING_CONF)?;
     }
 
     if !etc_src.exists() {

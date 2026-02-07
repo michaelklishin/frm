@@ -6,3 +6,4 @@ profile.json
 *.proptest-regressions
 tests/tls/certs/*.pem
 tests/tls/certs/*.conf
+!crates/frm-bin/templates/etc/rabbitmq/conf.d/

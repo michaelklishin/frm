@@ -6,6 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+pub const RABBITMQ_CONFIG_FILES: &str = "RABBITMQ_CONFIG_FILES";
 pub const RABBITMQ_HOME: &str = "RABBITMQ_HOME";
 pub const FRM_DIR: &str = "FRM_DIR";
 pub const FRM_SHELL: &str = "FRM_SHELL";

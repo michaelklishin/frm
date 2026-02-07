@@ -61,6 +61,10 @@ impl Paths {
         self.version_dir(version).join("etc").join("rabbitmq")
     }
 
+    pub fn version_confd_dir(&self, version: &Version) -> PathBuf {
+        self.version_etc_dir(version).join("conf.d")
+    }
+
     pub fn version_var_log_dir(&self, version: &Version) -> PathBuf {
         self.version_dir(version)
             .join("var")

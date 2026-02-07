@@ -58,6 +58,15 @@ fn paths_version_etc_dir() {
 }
 
 #[test]
+fn paths_version_confd_dir() {
+    let (_temp, paths) = setup_temp_paths();
+    let version = Version::new(4, 2, 3);
+    let confd_dir = paths.version_confd_dir(&version);
+    assert!(confd_dir.ends_with("conf.d"));
+    assert!(confd_dir.starts_with(paths.version_etc_dir(&version)));
+}
+
+#[test]
 fn paths_version_var_log_dir() {
     let (_temp, paths) = setup_temp_paths();
     let version = Version::new(4, 2, 3);
@@ -186,10 +195,12 @@ fn paths_version_dirs_are_consistent() {
 
     let sbin = paths.version_sbin_dir(&version);
     let etc = paths.version_etc_dir(&version);
+    let confd = paths.version_confd_dir(&version);
     let log = paths.version_var_log_dir(&version);
 
     assert!(sbin.starts_with(paths.version_dir(&version)));
     assert!(etc.starts_with(paths.version_dir(&version)));
+    assert!(confd.starts_with(paths.version_etc_dir(&version)));
     assert!(log.starts_with(paths.version_dir(&version)));
 }
 
