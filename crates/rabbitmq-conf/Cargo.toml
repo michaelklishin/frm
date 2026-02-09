@@ -17,7 +17,7 @@ thiserror = "2.0"
 winnow = "0.7"
 
 [dev-dependencies]
-proptest = "1.9"
+proptest = "1.10"
 tempfile = "3.25"
 
 [lints]
