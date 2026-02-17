@@ -2,7 +2,14 @@
 
 ## v0.19.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `frm releases install` now supports `--version [VERSION]` as well as the position `[VERSION]` argument
+
+### Bug Fixes
+
+ * `frm releases install` now correctly first fetches the list of releases from GitHub, then
+   evalutes the `latest` version
 
 
 ## v0.18.0 (Feb 6, 2026)
