@@ -1,6 +1,6 @@
 # frm Changelog
 
-## v0.19.0 (in development)
+## v0.19.0 (Feb 17, 2026)
 
 ### Enhancements
 
@@ -10,6 +10,18 @@
 
  * `frm releases install` now correctly first fetches the list of releases from GitHub, then
    evalutes the `latest` version
+
+### Dependency Updates
+
+ * `clap` upgraded to `4.5.58`
+ * `flate2` upgraded to `1.1.9`
+ * `futures-util` upgraded to `0.3.32`
+ * `indicatif` upgraded to `0.18.4`
+ * `predicates` upgraded to `3.1.4`
+ * `proptest` upgraded to `1.10.0`
+ * `reqwest` upgraded to `0.13.2`
+ * `tempfile` upgraded to `3.25.0`
+ * `toml` upgraded to `1.0.2`
 
 
 ## v0.18.0 (Feb 6, 2026)
