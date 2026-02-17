@@ -52,7 +52,7 @@ fn releases_use_with_version_option_short() {
 }
 
 #[test]
-fn releases_use_positional_takes_precedence() {
+fn releases_use_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.2.3");
     setup_version(&temp, "4.2.4");
@@ -69,7 +69,7 @@ fn releases_use_positional_takes_precedence() {
         ])
         .assert()
         .success()
-        .stdout(predicate::str::contains("4.2.3"));
+        .stdout(predicate::str::contains("4.2.4"));
 }
 
 #[test]
@@ -95,7 +95,7 @@ fn releases_use_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -126,15 +126,15 @@ fn releases_install_version_option_short() {
 }
 
 #[test]
-fn releases_install_positional_takes_precedence() {
+fn releases_install_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
-    setup_version(&temp, "4.2.3");
+    setup_version(&temp, "4.2.4");
 
     frm_cmd_with_dir(&temp)
         .args(["releases", "install", "4.2.3", "--version", "4.2.4"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("4.2.3"))
+        .stderr(predicate::str::contains("4.2.4"))
         .stderr(predicate::str::contains("already installed"));
 }
 
@@ -148,7 +148,7 @@ fn releases_install_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -186,7 +186,7 @@ fn releases_reinstall_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -238,7 +238,7 @@ fn releases_uninstall_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -283,7 +283,7 @@ fn alphas_use_with_version_option_short() {
 }
 
 #[test]
-fn alphas_use_positional_takes_precedence() {
+fn alphas_use_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.3.0-alpha.132057c7");
     setup_version(&temp, "4.3.0-alpha.232057c8");
@@ -300,7 +300,7 @@ fn alphas_use_positional_takes_precedence() {
         ])
         .assert()
         .success()
-        .stdout(predicate::str::contains("4.3.0-alpha.132057c7"));
+        .stdout(predicate::str::contains("4.3.0-alpha.232057c8"));
 }
 
 #[test]
@@ -326,7 +326,7 @@ fn alphas_use_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -342,7 +342,7 @@ fn alphas_install_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -380,7 +380,7 @@ fn alphas_reinstall_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -432,7 +432,7 @@ fn alphas_uninstall_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -463,7 +463,7 @@ fn tanzu_use_with_version_option_short() {
 }
 
 #[test]
-fn tanzu_use_positional_takes_precedence() {
+fn tanzu_use_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.2.3");
     setup_version(&temp, "4.2.4");
@@ -480,7 +480,7 @@ fn tanzu_use_positional_takes_precedence() {
         ])
         .assert()
         .success()
-        .stdout(predicate::str::contains("4.2.3"));
+        .stdout(predicate::str::contains("4.2.4"));
 }
 
 #[test]
@@ -493,7 +493,7 @@ fn tanzu_use_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -524,7 +524,7 @@ fn default_with_version_option_short() {
 }
 
 #[test]
-fn default_positional_takes_precedence() {
+fn default_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.2.3");
     setup_version(&temp, "4.2.4");
@@ -533,7 +533,7 @@ fn default_positional_takes_precedence() {
         .args(["default", "4.2.3", "--version", "4.2.4"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Default version set to 4.2.3"));
+        .stdout(predicate::str::contains("Default version set to 4.2.4"));
 }
 
 #[test]
@@ -570,7 +570,7 @@ fn default_help_shows_version_option() {
         .success()
         .stdout(predicate::str::contains("-V, --version"))
         .stdout(predicate::str::contains(
-            "equivalent to the positional argument",
+            "takes precedence over the positional argument",
         ));
 }
 
@@ -588,19 +588,19 @@ fn default_requires_version_either_positional_or_option() {
 // Additional precedence tests
 
 #[test]
-fn releases_reinstall_positional_takes_precedence() {
+fn releases_reinstall_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
         .args(["releases", "reinstall", "4.2.3", "--version", "4.2.4"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("4.2.3"))
+        .stderr(predicate::str::contains("4.2.4"))
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn releases_uninstall_positional_takes_precedence() {
+fn releases_uninstall_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.2.3");
     setup_version(&temp, "4.2.4");
@@ -609,11 +609,11 @@ fn releases_uninstall_positional_takes_precedence() {
         .args(["releases", "uninstall", "4.2.3", "--version", "4.2.4"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("4.2.3 uninstalled"));
+        .stdout(predicate::str::contains("4.2.4 uninstalled"));
 }
 
 #[test]
-fn alphas_reinstall_positional_takes_precedence() {
+fn alphas_reinstall_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
 
     frm_cmd_with_dir(&temp)
@@ -626,12 +626,12 @@ fn alphas_reinstall_positional_takes_precedence() {
         ])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("4.3.0-alpha.132057c7"))
+        .stderr(predicate::str::contains("4.3.0-alpha.232057c8"))
         .stderr(predicate::str::contains("not installed"));
 }
 
 #[test]
-fn alphas_uninstall_positional_takes_precedence() {
+fn alphas_uninstall_version_option_takes_precedence() {
     let temp = TempDir::new().unwrap();
     setup_version(&temp, "4.3.0-alpha.132057c7");
     setup_version(&temp, "4.3.0-alpha.232057c8");
@@ -646,5 +646,5 @@ fn alphas_uninstall_positional_takes_precedence() {
         ])
         .assert()
         .success()
-        .stdout(predicate::str::contains("4.3.0-alpha.132057c7 uninstalled"));
+        .stdout(predicate::str::contains("4.3.0-alpha.232057c8 uninstalled"));
 }

@@ -95,7 +95,7 @@ proptest! {
     }
 
     #[test]
-    fn positional_always_takes_precedence_over_option((maj1, min1, pat1) in arb_version(), (maj2, min2, pat2) in arb_version()) {
+    fn version_option_always_takes_precedence_over_positional((maj1, min1, pat1) in arb_version(), (maj2, min2, pat2) in arb_version()) {
         prop_assume!(maj1 != maj2 || min1 != min2 || pat1 != pat2);
 
         let version1 = format!("{}.{}.{}", maj1, min1, pat1);
@@ -112,7 +112,7 @@ proptest! {
 
         prop_assert!(output.status.success());
         let stdout = String::from_utf8_lossy(&output.stdout);
-        prop_assert!(stdout.contains(&version1));
+        prop_assert!(stdout.contains(&version2));
     }
 }
 

@@ -639,12 +639,15 @@ fn version_opt_arg(help: &'static str) -> Arg {
     Arg::new("version_opt")
         .long("version")
         .short('V')
-        .help(format!("{}; equivalent to the positional argument", help))
+        .help(format!(
+            "{}; takes precedence over the positional argument",
+            help
+        ))
         .value_name("VERSION")
 }
 
 pub fn get_version_arg(matches: &clap::ArgMatches) -> Option<&String> {
     matches
-        .get_one::<String>("version")
-        .or_else(|| matches.get_one::<String>("version_opt"))
+        .get_one::<String>("version_opt")
+        .or_else(|| matches.get_one::<String>("version"))
 }
