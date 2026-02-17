@@ -507,7 +507,7 @@ dependencies = [
 
 [[package]]
 name = "frm-bin"
-version = "0.19.0"
+version = "0.20.0"
 dependencies = [
  "assert_cmd",
  "bel7-cli",
@@ -1306,7 +1306,7 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "rabbitmq-conf"
-version = "0.19.0"
+version = "0.20.0"
 dependencies = [
  "proptest",
  "tempfile",
@@ -1316,7 +1316,7 @@ dependencies = [
 
 [[package]]
 name = "rabbitmq-versioning"
-version = "0.19.0"
+version = "0.20.0"
 dependencies = [
  "proptest",
  "serde",
