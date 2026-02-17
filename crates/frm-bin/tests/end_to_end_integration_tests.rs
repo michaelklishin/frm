@@ -30,6 +30,53 @@ fn frm_cmd_with_dir(dir: &TempDir) -> Command {
 // ============================================================================
 
 #[test]
+fn end_to_end_releases_install_latest() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Listing GA releases on GitHub"))
+        .stdout(predicate::str::contains("Found latest GA release"))
+        .stdout(predicate::str::contains("installed"));
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "list"])
+        .assert()
+        .success()
+        .stdout(predicate::str::is_empty().not());
+}
+
+#[test]
+fn end_to_end_releases_install_latest_ignores_local_versions() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", TEST_GA_VERSION_2])
+        .assert()
+        .success();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", "latest"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Listing GA releases on GitHub"))
+        .stdout(predicate::str::contains("Found latest GA release"));
+}
+
+#[test]
+fn end_to_end_releases_install_latest_case_insensitive() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", "LATEST"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Listing GA releases on GitHub"));
+}
+
+#[test]
 fn end_to_end_releases_install_and_list() {
     let temp = TempDir::new().unwrap();
 

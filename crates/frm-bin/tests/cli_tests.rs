@@ -2383,3 +2383,25 @@ fn cli_alphas_use_latest_with_whitespace() {
         .success()
         .stdout(predicate::str::contains("4.3.0-alpha.abc123"));
 }
+
+#[test]
+fn cli_releases_install_no_version() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no version specified"));
+}
+
+#[test]
+fn cli_releases_install_invalid_version() {
+    let temp = TempDir::new().unwrap();
+
+    frm_cmd_with_dir(&temp)
+        .args(["releases", "install", "not-a-version"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("invalid version format"));
+}

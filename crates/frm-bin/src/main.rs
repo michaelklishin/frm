@@ -79,28 +79,23 @@ async fn main() -> ExitCode {
                 let version_arg = get_version_arg(install_sub);
                 let force = install_sub.get_flag("force");
 
-                let version_result = resolve_version(&paths, version_arg);
-                let version = match version_result {
-                    Ok(v) => Ok(v),
-                    Err(Error::NoGAVersionsInstalled)
-                        if version_arg.is_some_and(|v| v.trim().eq_ignore_ascii_case("latest")) =>
-                    {
-                        print_info("No local versions installed, fetching latest from GitHub...");
+                match version_arg {
+                    Some(v) if v.trim().eq_ignore_ascii_case("latest") => {
+                        print_info("Listing GA releases on GitHub...");
                         let client = reqwest::Client::new();
                         match find_latest_ga_release(&client).await {
                             Ok(v) => {
                                 print_info(format!("Found latest GA release: {}", v));
-                                Ok(v)
+                                commands::install_release(&paths, &v, force).await
                             }
                             Err(e) => Err(e),
                         }
                     }
-                    Err(e) => Err(e),
-                };
-
-                match version {
-                    Ok(v) => commands::install_release(&paths, &v, force).await,
-                    Err(e) => Err(e),
+                    Some(v) => match v.parse::<Version>() {
+                        Ok(version) => commands::install_release(&paths, &version, force).await,
+                        Err(e) => Err(e.into()),
+                    },
+                    None => Err(Error::InvalidVersion("no version specified".into())),
                 }
             }
             Some(("reinstall", reinstall_sub)) => {
