@@ -1,6 +1,6 @@
 # frm Changelog
 
-## v0.20.0 (in development)
+## v0.20.0 (Feb 18, 2026)
 
 ### Bug Fixes
 
