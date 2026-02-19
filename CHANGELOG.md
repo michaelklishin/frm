@@ -2,7 +2,9 @@
 
 ## v0.20.0 (in development)
 
-No changes yet.
+### Bug Fixes
+
+ * `releases install` really truly supports `--version [VERSION]`: the positional `[VERSION]` argument is now optional
 
 
 ## v0.19.0 (Feb 17, 2026)
@@ -36,7 +38,7 @@ No changes yet.
  * `frm` nwo uses a [`conf.d`](https://www.rabbitmq.com/docs/configure#config-confd-directory) instead of a single file
 
  * `fg node` and `bg start` now log to both a file and the standard output by default.
- 
+
    The default logging configuration now lives in `conf.d/90-logging.conf` instead of the default `rabbitmq.conf` template.
 
 
@@ -71,7 +73,7 @@ No changes yet.
 ### Internal Changes
 
 Some internal changes worth mentioning:
- 
+
  * Significant refactoring to extract several shared modules under `frm::common::*`
  * Significant release automation improvements
 

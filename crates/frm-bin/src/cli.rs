@@ -632,7 +632,7 @@ fn version_arg() -> Arg {
 }
 
 fn positional_version_arg(help: &'static str) -> Arg {
-    Arg::new("version").help(help).index(1)
+    Arg::new("version").help(help).index(1).required(false)
 }
 
 fn version_opt_arg(help: &'static str) -> Arg {
