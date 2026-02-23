@@ -21,7 +21,7 @@ name = "frm"
 path = "src/main.rs"
 
 [dependencies]
-bel7-cli = { version = "0.8", features = ["full"] }
+bel7-cli = { version = "0.9", features = ["full"] }
 chrono = "0.4"
 chrono-english = "0.1"
 clap = { version = "4.5", features = ["derive"] }
