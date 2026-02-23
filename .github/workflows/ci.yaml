@@ -71,3 +71,22 @@ jobs:
 
       - name: Run tests
         run: RUST_BACKTRACE=1 NEXTEST_RETRIES=2 cargo nextest run --cargo-profile ci --workspace --no-fail-fast --all-features
+
+  dependabot:
+    needs: [lint, build]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
+    steps:
+      - id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --merge --auto "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
