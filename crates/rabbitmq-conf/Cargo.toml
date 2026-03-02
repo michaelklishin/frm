@@ -18,7 +18,7 @@ winnow = "0.7"
 
 [dev-dependencies]
 proptest = "1.10"
-tempfile = "3.25"
+tempfile = "3.26"
 
 [lints]
 workspace = true
