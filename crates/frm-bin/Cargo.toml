@@ -38,7 +38,7 @@ tabled = "0.20"
 tar = "0.4"
 thiserror = "2.0"
 tokio = { version = "1.50", features = ["rt-multi-thread", "macros"] }
-toml = "1.0"
+toml = "1.1"
 xz2 = "0.1"
 
 [dev-dependencies]
